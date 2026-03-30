@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HYPERION Rehab — Clinical Flight Therapy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a1628;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Clinical UI Styles removed to use portal.html */
+
+        /* ---- GAME CANVAS ---- */
+        #gameCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        /* ---- HUD ---- */
+        #hud {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            display: none;
+        }
+
+        .glass-panel {
+            background: rgba(10, 22, 40, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        #hud-tl {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            padding: 16px 22px;
+            min-width: 180px;
+        }
+
+        .hud-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-bottom: 2px;
+        }
+
+        .hud-val {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .hud-score {
+            font-size: 34px;
+            color: #00e5ff;
+        }
+
+        #hud-timer {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #timer-svg {
+            width: 90px;
+            height: 90px;
+        }
+
+        #timer-circle {
+            stroke: #00e5ff;
+            stroke-width: 5;
+            fill: none;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.5s;
+        }
+
+        #timer-bg {
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 5;
+            fill: none;
+        }
+
+        #timer-text {
+            fill: #fff;
+            font: 700 18px 'Inter', sans-serif;
+            dominant-baseline: middle;
+            text-anchor: middle;
+        }
+
+        #hud-tr {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 14px 18px;
+            text-align: right;
+        }
+
+        #hud-br {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 18px;
+            font-size: 13px;
+        }
+
+        #conn-status {
+            color: #ff5555;
+            font-weight: 600;
+        }
+
+        #imu-status {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        /* Commentary Banner */
+        #commentary {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 20, 40, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #00e5ff;
+            max-width: 500px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+
+        /* Milestone Flash */
+        #milestone-flash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px;
+            height: 44px;
+            pointer-events: none;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 2px;
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+        }
+
+        #crosshair::after {
+            height: 2px;
+            width: 100%;
+            top: 50%;
+            left: 0;
+        }
+
+        .ch-circle {
+            position: absolute;
+            inset: 0;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+        }
+
+        /* Mute Button */
+        #mute-btn {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            pointer-events: all;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        #mute-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ---- LOADING SCREEN ---- */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 90;
+            display: none;
+            background: radial-gradient(circle, #0d2b45, #0a1628);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #loading-screen.visible {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00e5ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #loading-msg {
+            font-size: 18px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ---- SUMMARY SCREEN ---- */
+        #summary-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(20px);
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .summary-card {
+            max-width: 720px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+        }
+
+        .summary-title {
+            font-size: 30px;
+            font-weight: 800;
+            color: #00e5ff;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .summary-sub {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .stat-val {
+            font-size: 32px;
+            font-weight: 800;
+            color: #00e5ff;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .detail-table tr td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-table tr td:first-child {
+            color: rgba(255, 255, 255, 0.45);
+            width: 40%;
+        }
+
+        .detail-table tr td:last-child {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .summary-rating {
+            text-align: center;
+            font-size: 40px;
+            margin: 10px 0;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+        }
+
+        .summary-message {
+            text-align: center;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .summary-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(135deg, #00e5ff, #0066ff);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 100, 255, 0.3);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .medical-disclaimer {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            line-height: 1.6;
+            margin-top: 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+        }
+
+        /* ---- PRINT STYLES (Clinical Hospital Report) ---- */
+        @media print {
+            @page {
+                margin: 15mm;
+                size: A4 portrait;
+            }
+
+            body {
+                background: #fff !important;
+                color: #111 !important;
+                overflow: auto;
+                font-family: 'Inter', sans-serif;
+            }
+
+            #hud,
+            #gameCanvas,
+            #loading-screen,
+            #vignette,
+            .summary-btns {
+                display: none !important;
+            }
+
+            #summary-screen {
+                display: block !important;
+                position: static !important;
+                background: #fff !important;
+                color: #111 !important;
+                padding: 0 !important;
+            }
+
+            .summary-card {
+                background: #fff !important;
+                border: none !important;
+                color: #111 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Clinical Letterhead */
+            #printable-report::before {
+                content: 'HYPERION CLINICAL REHABILITATION REPORT';
+                display: block;
+                font-size: 24px;
+                font-weight: 800;
+                color: #0a1628;
+                border-bottom: 3px solid #00e5ff;
+                padding-bottom: 15px;
+                margin-bottom: 30px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+
+            .summary-title,
+            .summary-rating,
+            .summary-message {
+                display: none !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-bottom: 30px;
+                border: 2px solid #0a1628;
+                border-radius: 8px;
+                padding: 15px;
+            }
+
+            .stat-box {
+                border: none !important;
+                background: transparent !important;
+                border-right: 1px solid #ccc !important;
+            }
+
+            .stat-box:last-child {
+                border-right: none !important;
+            }
+
+            .stat-val {
+                color: #0a1628 !important;
+                font-size: 28px;
+            }
+
+            .stat-label {
+                color: #555 !important;
+                font-weight: 700;
+            }
+
+            .detail-table {
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .detail-table tr td {
+                border-bottom: 1px solid #eee;
+                padding: 12px 15px;
+            }
+
+            .detail-table tr td:first-child {
+                color: #333 !important;
+                font-weight: 700;
+                background: #f8fafc;
+                width: 40%;
+            }
+
+            .detail-table tr td:last-child {
+                color: #111 !important;
+                font-weight: 500;
+            }
+
+            .medical-disclaimer {
+                margin-top: 40px;
+                border: 1px solid #ccc;
+                padding: 15px;
+                background: #fdfdfd;
+                color: #555 !important;
+                font-size: 10px;
+                border-radius: 6px;
+            }
+
+            #clinical-signature {
+                display: flex !important;
+                justify-content: space-between;
+                margin-top: 60px;
+                padding-top: 20px;
+                text-align: center;
+            }
+
+            .sig-line {
+                width: 45%;
+                border-top: 1px solid #000;
+                padding-top: 8px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        }
+
+        .stat-box {
+            border: 1px solid #eee !important;
+            background: #f9f9f9 !important;
+        }
+
+        .stat-label,
+        .summary-sub,
+        .detail-table tr td:first-child,
+        .summary-message {
+            color: #555 !important;
+        }
+
+        .medical-disclaimer {
+            color: #999 !important;
+        }
+
+        .summary-rating {
+            color: #ffa500;
+        }
+
+        /* --- PDF PRINT STYLES (CLINICAL REPORT) --- */
+        #vignette {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 55%, rgba(0, 0, 0, 0.45));
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ======== LOADING ======== -->
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div id="loading-msg">Preparing your therapy environment...</div>
+    </div>
+
+    <!-- ======== GAME CANVAS ======== -->
+    <canvas id="gameCanvas"></canvas>
+    <div id="vignette"></div>
+
+    <!-- ======== HUD ======== -->
+    <div id="hud">
+        <div id="hud-tl" class="glass-panel">
+            <div class="hud-label">Mobility Score</div>
+            <div id="hud-score" class="hud-val hud-score">0</div>
+            <div style="height:10px"></div>
+            <div class="hud-label">Rings Collected</div>
+            <div id="hud-rings" class="hud-val">0 / 0</div>
+        </div>
+
+        <div id="hud-timer">
+            <svg id="timer-svg" viewBox="0 0 90 90">
+                <circle id="timer-bg" cx="45" cy="45" r="38" />
+                <circle id="timer-circle" cx="45" cy="45" r="38" stroke-dasharray="238.76" stroke-dashoffset="0" />
+                <text id="timer-text" x="45" y="45">5:00</text>
+            </svg>
+        </div>
+
+        <div id="hud-tr" class="glass-panel">
+            <div class="hud-label">Exercise</div>
+            <div id="hud-ex" class="hud-val" style="font-size:16px; color:#00e5ff">—</div>
+            <div style="height:8px"></div>
+            <div class="hud-label">Difficulty</div>
+            <div id="hud-diff" class="hud-val" style="font-size:16px">—</div>
+        </div>
+
+        <div id="hud-br" class="glass-panel">
+            <div id="conn-status">● Sensor Link Offline</div>
+            <div id="imu-status">Waiting for ARM system...</div>
+        </div>
+
+        <div id="crosshair">
+            <div class="ch-circle"></div>
+        </div>
+
+        <div id="commentary"></div>
+        <div id="milestone-flash"></div>
+        <button id="mute-btn" title="Mute/Unmute commentary">🔊</button>
+    </div>
+
+    <!-- ======== SUMMARY SCREEN ======== -->
+    <div id="summary-screen">
+        <div class="summary-card" id="printable-report">
+            <div class="summary-title">Session Complete! 🎉</div>
+            <div class="summary-sub" id="sum-date"></div>
+            <div class="summary-rating" id="sum-stars">⭐⭐⭐⭐⭐</div>
+            <div class="summary-message" id="sum-message"></div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-val" id="sum-score">0</div>
+                    <div class="stat-label">Mobility Score</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="sum-rate">0%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="sum-collected">0</div>
+                    <div class="stat-label">Rings Collected</div>
+                </div>
+            </div>
+
+            <table class="detail-table">
+                <tr>
+                    <td>Patient Name</td>
+                    <td id="sum-name">—</td>
+                </tr>
+                <tr>
+                    <td>Patient ID</td>
+                    <td id="sum-pid">—</td>
+                </tr>
+                <tr>
+                    <td>Date &amp; Time</td>
+                    <td id="sum-datetime">—</td>
+                </tr>
+                <tr>
+                    <td>Exercise Type</td>
+                    <td id="sum-ex">—</td>
+                </tr>
+                <tr>
+                    <td>Difficulty</td>
+                    <td id="sum-diff">—</td>
+                </tr>
+                <tr>
+                    <td>Session Duration</td>
+                    <td id="sum-dur">—</td>
+                </tr>
+                <tr>
+                    <td>Total Rings Spawned</td>
+                    <td id="sum-spawned">—</td>
+                </tr>
+                <tr>
+                    <td>Rings Collected</td>
+                    <td id="sum-col2">—</td>
+                </tr>
+                <tr>
+                    <td>Peak Speed</td>
+                    <td id="sum-maxspd">—</td>
+                </tr>
+            </table>
+
+            <!-- Hidden in UI, visible in Print PDF -->
+            <div id="clinical-signature" style="display:none;">
+                <div class="sig-line">Patient Signature</div>
+                <div class="sig-line">Attending Physician / Therapist Signature</div>
+            </div>
+
+            <div class="medical-disclaimer">
+                ⚕️ MEDICAL DISCLAIMER: This report is generated by a digital mobility aid for informational purposes
+                only.
+                It does not constitute a clinical assessment or medical diagnosis. Results must be reviewed and
+                interpreted
+                by a licensed healthcare professional. Not a substitute for clinical evaluation.
+            </div>
+
+            <div class="summary-btns" style="margin-top:24px;">
+                <button class="btn-primary" onclick="downloadReport()">📄 Download Clinical PDF</button>
+                <button class="btn-secondary" onclick="window.location.href='portal.html'">🔙 Return to Portal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Maps for ThreeJS -->
+    <script type="importmap">
+  { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }}
+</script>
+
+    <script>
+        const SESSION = {
+            patientName: 'Guest User',
+            patientId: 'GUEST-000',
+            duration: 300,
+            difficulty: 'medium',
+            exerciseType: 'rom',
+            startTime: new Date()
+        };
+
+        // Override from Clinical Portal if logged in
+        try {
+            const saved = localStorage.getItem('hyperion_patient');
+            if (saved) {
+                const p = JSON.parse(saved);
+                SESSION.patientName = p.name;
+                SESSION.patientId = p.pid;
+
+                // Read from the newly added config form on the clinical portal
+                if (p.sessionConfig) {
+                    SESSION.duration = p.sessionConfig.duration || 300;
+                    SESSION.difficulty = p.sessionConfig.difficulty || 'medium';
+                    SESSION.exerciseType = p.sessionConfig.exerciseType || 'rom';
+                }
+            }
+        } catch (e) {
+            console.error("Config load error", e);
+        }
+
+        // The Game now bypasses the setup menu and loads immediately.
+        window.onload = function () {
+            document.getElementById('loading-screen').classList.add('visible');
+            initGame();
+        };
+
+        function downloadReport() {
+            window.print();
+        }
+
+        function endSession() {
+            // ... existing endSession logic ...
+
+            // Securely save therapy data
+            const therapyData = {
+                patientName: SESSION.patientName,
+                patientId: SESSION.patientId,
+                duration: SESSION.duration,
+                difficulty: SESSION.difficulty,
+                exerciseType: SESSION.exerciseType,
+                startTime: SESSION.startTime.toISOString(),
+                endTime: new Date().toISOString(),
+                score: GS.score,
+                ringsCollected: GS.ringsCollected,
+                ringsSpawned: GS.ringsSpawned,
+                peakSpeed: GS.peakSpeed,
+                // Add other relevant GS data here
+            };
+
+            fetch('http://localhost:8081/api/sessions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(therapyData),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Session data saved successfully:', data);
+                })
+                .catch(error => {
+                    console.error('Error saving session data:', error);
+                });
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { Water } from 'three/addons/objects/Water.js';
+        import { Sky } from 'three/addons/objects/Sky.js';
+
+        // Expose initGame globally
+        window.initGame = function () {
+            // ---- CONFIG FROM SESSION ----
+            const DIFF = {
+                easy: { speed: 80, ringScale: 3.5, spawnInterval: 2.5, ringSpread: 1.0 },
+                medium: { speed: 130, ringScale: 2.5, spawnInterval: 1.8, ringSpread: 1.2 },
+                hard: { speed: 200, ringScale: 1.8, spawnInterval: 1.2, ringSpread: 1.4 }
+            }[SESSION.difficulty];
+
+            const EX_NAMES = {
+                rom: 'Full Range of Motion', flexion: 'Shoulder Flexion',
+                abduction: 'Shoulder Abduction', wrist: 'Wrist & Elbow Rotation'
+            };
+            const DIFF_NAMES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+
+            document.getElementById('hud-ex').textContent = EX_NAMES[SESSION.exerciseType];
+            document.getElementById('hud-diff').textContent = DIFF_NAMES[SESSION.difficulty];
+            document.getElementById('hud-diff').style.color = { easy: '#00ff77', medium: '#ffcc00', hard: '#ff5555' }[SESSION.difficulty];
+
+            // ---- GAME STATE ----
+            const GS = {
+                score: 0, speed: 0,
+                roll: 0, pitch: 0, force: 0, emg: 0,
+                sx: 0, sy: 0, sroll: 0, spitch: 0,
+                timeLeft: SESSION.duration, totalSeconds: SESSION.duration,
+                ringsCollected: 0, ringsSpawned: 0, peakSpeed: 0,
+                ringTimer: 0, sessionDone: false, warpAngle: 0,
+                milestonesHit: new Set(), commentaryTimer: 30
+            };
+
+            // ---- RENDERER ----
+            const canvas = document.getElementById('gameCanvas');
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.5, 30000);
+
+            // ---- SKY ----
+            const sunVec = new THREE.Vector3();
+            const sky = new Sky();
+            sky.scale.setScalar(20000);
+            scene.add(sky);
+            const su = sky.material.uniforms;
+            su['turbidity'].value = 2; su['rayleigh'].value = 1.8;
+            su['mieCoefficient'].value = 0.004; su['mieDirectionalG'].value = 0.85;
+            const phi = THREE.MathUtils.degToRad(75);
+            const theta = THREE.MathUtils.degToRad(-140);
+            sunVec.setFromSphericalCoords(1, phi, theta);
+            su['sunPosition'].value.copy(sunVec);
+
+            // ---- LIGHTING ----
+            const pmrem = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmrem.fromScene(sky).texture;
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            const sun = new THREE.DirectionalLight(0xfff5e0, 2.5);
+            sun.position.copy(sunVec).multiplyScalar(100);
+            scene.add(sun);
+
+            // ---- OCEAN ----
+            const tfLoader = new THREE.TextureLoader();
+            const waterNormals = tfLoader.load(
+                'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/waternormals.jpg',
+                t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+            );
+            const water = new Water(
+                new THREE.PlaneGeometry(20000, 20000),
+                {
+                    textureWidth: 512, textureHeight: 512, waterNormals,
+                    sunDirection: sunVec.clone().normalize(),
+                    sunColor: 0xffffff, waterColor: 0x005a8f, distortionScale: 3.5
+                }
+            );
+            water.rotation.x = -Math.PI / 2;
+            water.position.y = -60;
+            scene.add(water);
+
+            // ---- BIRD GROUP ----
+            const birdGroup = new THREE.Group();
+            scene.add(birdGroup);
+            let mixer = null;
+            const clock = new THREE.Clock();
+
+            // ---- RINGS ----
+            const ringGeo = new THREE.TorusGeometry(12, 0.7, 16, 64);
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x007799, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.2, transparent: true, opacity: 0.85 });
+            const ringMatGreen = new THREE.MeshStandardMaterial({ color: 0x00ff77, emissive: 0x00aa44, emissiveIntensity: 1.0 });
+            const rings = [];
+
+            // ---- PARTICLES (Gold milestone burst) ----
+            const P = 800;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(P * 3); const pVel = new Float32Array(P * 3);
+            const pCol = new Float32Array(P * 3); const pLife = new Float32Array(P);
+            for (let i = 0; i < P; i++) pPos[i * 3 + 1] = -9999;
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+            const pMat = new THREE.PointsMaterial({ size: 6, vertexColors: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+            const particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+            let pIdx = 0;
+
+            function emitBurst(x, y, z, r, g, b, count = 60) {
+                for (let i = 0; i < count; i++) {
+                    const vi = pIdx % P;
+                    pPos[vi * 3] = x; pPos[vi * 3 + 1] = y; pPos[vi * 3 + 2] = z;
+                    pVel[vi * 3] = (Math.random() - .5) * 200; pVel[vi * 3 + 1] = (Math.random() * .5 + .5) * 200; pVel[vi * 3 + 2] = (Math.random() - .5) * 200;
+                    pCol[vi * 3] = r; pCol[vi * 3 + 1] = g; pCol[vi * 3 + 2] = b;
+                    pLife[vi] = 0.8 + Math.random() * 0.5;
+                    pIdx++;
+                }
+            }
+
+            // ---- COMMENTARY ----
+            let muted = false;
+            let commentaryTimeout = null;
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            function playTone(freq, duration, type = 'sine', vol = 0.08) {
+                if (muted) return;
+                try {
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + duration);
+                } catch (e) { }
+            }
+
+            function playCollectChime() {
+                [880, 1046, 1318].forEach((f, i) => setTimeout(() => playTone(f, 0.4, 'sine', 0.07), i * 80));
+            }
+            function playMilestoneChime() {
+                [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.6, 'sine', 0.1), i * 100));
+            }
+
+            const COMMENTS_PERIODIC = [
+                "Keep it up! You're doing amazingly well! 🌟",
+                "Excellent movement! Your form is superb.",
+                "Every ring brings you closer to full recovery! 💪",
+                "Wonderful work — stay relaxed and breathe steadily.",
+                "You are stronger than you know! Keep flying! 🦩",
+                "Great job! Your range of motion is improving!",
+                "Steady and smooth — that's the key! You've got this!",
+                "Let the ocean breeze guide your movements. Relax and flow."
+            ];
+            const COMMENTS_COLLECT = [
+                "Perfect! Great range of motion! ✅",
+                "Excellent reach! Keep that up!",
+                "Ring captured! Wonderful control!",
+                "Beautiful movement! ⭐",
+                "Superb! That's exactly the motion we need!"
+            ];
+            const COMMENTS_MISSED = [
+                "Almost there! Reach a little further next time.",
+                "Don't worry — each attempt strengthens you!",
+                "Keep going! You're making great progress.",
+                "Try to follow the ring's position. You can do it!"
+            ];
+
+            function showCommentary(text, duration = 4000) {
+                const el = document.getElementById('commentary');
+                el.textContent = text;
+                el.style.opacity = '1';
+                if (commentaryTimeout) clearTimeout(commentaryTimeout);
+                commentaryTimeout = setTimeout(() => el.style.opacity = '0', duration);
+            }
+
+            let mutedState = false;
+            document.getElementById('mute-btn').addEventListener('click', () => {
+                mutedState = !mutedState;
+                muted = mutedState;
+                document.getElementById('mute-btn').textContent = mutedState ? '🔇' : '🔊';
+            });
+
+            // ---- RING SPAWNING (Exercise Patterns) ----
+            function getPatternPosition(shipZ) {
+                const type = SESSION.exerciseType;
+                const sp = DIFF.ringSpread;
+                const base = shipZ + 600 + Math.random() * 300;
+
+                if (type === 'rom') {
+                    // Full range — random across full field
+                    return new THREE.Vector3((Math.random() - .5) * 250 * sp, 15 + Math.random() * 100 * sp, base);
+                }
+                if (type === 'flexion') {
+                    // Vertical arc only — mostly up/down
+                    const t = Math.random();
+                    return new THREE.Vector3((Math.random() - .5) * 40, 20 + t * 140 * sp, base);
+                }
+                if (type === 'abduction') {
+                    // Horizontal arc only — mostly side to side
+                    const t = (Math.random() - .5) * 2;
+                    return new THREE.Vector3(t * 150 * sp, 30 + Math.random() * 40, base);
+                }
+                if (type === 'wrist') {
+                    // Spiral pattern — alternating up-left, down-right in tighter circles
+                    GS.warpAngle += 1.2;
+                    const r = 60 * sp;
+                    return new THREE.Vector3(
+                        Math.cos(GS.warpAngle * 0.5) * r,
+                        50 + Math.sin(GS.warpAngle * 0.5) * r * 0.6,
+                        base
+                    );
+                }
+            }
+
+            function initRings() {
+                for (let i = 0; i < 40; i++) {
+                    const r = new THREE.Mesh(ringGeo, ringMat.clone());
+                    r.visible = false; r.userData = { active: false, passed: false, phase: Math.random() * Math.PI * 2 };
+                    scene.add(r); rings.push(r);
+                }
+            }
+
+            function spawnRing() {
+                const r = rings.find(x => !x.userData.active);
+                if (!r) return;
+                const sc = DIFF.ringScale;
+                r.scale.set(sc, sc, sc);
+                r.position.copy(getPatternPosition(birdGroup.position.z));
+                r.material.color.setHex(0x00e5ff);
+                r.material.emissive.setHex(0x007799);
+                r.userData.active = true; r.userData.passed = false;
+                r.visible = true;
+                GS.ringsSpawned++;
+            }
+
+            // ---- TIMER HUD ----
+            const timerCircle = document.getElementById('timer-circle');
+            const timerText = document.getElementById('timer-text');
+            const CIRCUMFERENCE = 2 * Math.PI * 38; // r=38
+
+            function updateTimerHUD() {
+                const pct = GS.timeLeft / GS.totalSeconds;
+                timerCircle.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+                timerCircle.style.stroke = pct > 0.5 ? '#00e5ff' : pct > 0.25 ? '#ffcc00' : '#ff5555';
+                const m = Math.floor(GS.timeLeft / 60), s = Math.floor(GS.timeLeft % 60);
+                timerText.textContent = `${m}:${s < 10 ? '0' + s : s}`;
+            }
+
+
+
+            function downloadReport() {
+                window.print();
+            }
+
+            // ---- SESSION END ----
+            function endSession() {
+                GS.sessionDone = true;
+                renderer.setAnimationLoop(null);
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('gameCanvas').style.display = 'none';
+                document.getElementById('vignette').style.display = 'none';
+
+                const rate = GS.ringsSpawned > 0 ? Math.round((GS.ringsCollected / GS.ringsSpawned) * 100) : 0;
+                const stars = rate >= 90 ? '⭐⭐⭐⭐⭐' : rate >= 70 ? '⭐⭐⭐⭐' : rate >= 50 ? '⭐⭐⭐' : rate >= 30 ? '⭐⭐' : '⭐';
+                const msg = rate >= 80 ? "Outstanding performance! Your arm mobility is showing excellent improvement. Keep up the fantastic work!" :
+                    rate >= 50 ? "Great effort today! You showed strong determination. Consistent sessions will continue to improve your range of motion." :
+                        "Every session counts! You made progress today. Don't be discouraged — recovery takes time and patience. You're on the right path.";
+
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+                document.getElementById('sum-date').textContent = `${dateStr} at ${timeStr}`;
+                document.getElementById('sum-stars').textContent = stars;
+                document.getElementById('sum-message').textContent = msg;
+                document.getElementById('sum-score').textContent = GS.score.toLocaleString();
+                document.getElementById('sum-rate').textContent = rate + '%';
+                document.getElementById('sum-collected').textContent = GS.ringsCollected;
+                document.getElementById('sum-name').textContent = SESSION.patientName;
+                document.getElementById('sum-pid').textContent = SESSION.patientId;
+                document.getElementById('sum-datetime').textContent = `${dateStr}, ${timeStr}`;
+                document.getElementById('sum-ex').textContent = EX_NAMES[SESSION.exerciseType];
+                document.getElementById('sum-diff').textContent = DIFF_NAMES[SESSION.difficulty];
+                const dur = SESSION.duration;
+                document.getElementById('sum-dur').textContent = `${Math.floor(dur / 60)}m ${dur % 60 ? (dur % 60) + 's' : ''}`.trim();
+                document.getElementById('sum-spawned').textContent = GS.ringsSpawned;
+                document.getElementById('sum-col2').textContent = `${GS.ringsCollected} (${rate}% success rate)`;
+                document.getElementById('sum-maxspd').textContent = `${Math.round(GS.peakSpeed)} km/h`;
+
+                document.getElementById('summary-screen').style.display = 'block';
+
+                // POST RESULTS TO CLINICAL DATABASE
+                fetch('http://localhost:8081/api/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pid: SESSION.patientId,
+                        exercise_type: SESSION.exerciseType,
+                        difficulty: SESSION.difficulty,
+                        duration: SESSION.duration,
+                        score: GS.score,
+                        success_rate: rate,
+                        rings_collected: GS.ringsCollected,
+                        rings_spawned: GS.ringsSpawned,
+                        max_speed: GS.peakSpeed
+                    })
+                }).then(res => res.json()).then(console.log).catch(console.error);
+            }
+
+            // ---- MILESTONE ----
+            function triggerMilestone(pct) {
+                const flash = document.getElementById('milestone-flash');
+                const msgs = { 25: '25% Complete! Keep Flying! 🎊', 50: 'Halfway There! Amazing! 🏅', 75: '75% — So Close! 🔥', 100: 'Session Complete! 🥇' };
+                flash.textContent = msgs[pct] || '';
+                flash.style.opacity = '1';
+                setTimeout(() => flash.style.opacity = '0', 3500);
+                emitBurst(0, 0, birdGroup.position.z + 50, 1, 0.84, 0, 120);
+                playMilestoneChime();
+            }
+
+            // ---- LOAD BIRD ----
+            const gltfLoader = new GLTFLoader();
+            const loadMsg = document.getElementById('loading-msg');
+
+            gltfLoader.load('../../assets/models/bird.glb', (gltf) => {
+                document.getElementById('loading-screen').classList.remove('visible');
+                document.getElementById('gameCanvas').style.display = 'block';
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('vignette').style.display = 'block';
+
+                // Bird model: Flamingo in Three.js has the mesh at scene.children[0]
+                const model = gltf.scene.children[0];
+                model.scale.set(0.22, 0.22, 0.22);
+                // Fix orientation: rotate so the bird faces FORWARD (into the screen = +Z direction)
+                model.rotation.y = 0;     // Face forward, not sideways
+                model.rotation.x = 0;
+                birdGroup.add(model);
+
+                mixer = new THREE.AnimationMixer(model);
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+
+                initRings();
+                startLoop();
+
+            }, (prog) => {
+                if (prog.total) loadMsg.textContent = `Loading bird model... ${Math.round(prog.loaded / prog.total * 100)}%`;
+            }, (err) => {
+                console.error(err);
+                loadMsg.textContent = "Error loading model. Please run download_assets.py first.";
+            });
+
+            // ---- WEBSOCKET BRIDGE ----
+            let wsMsgCount = 0;
+            let ws = null;
+            // Auto-calibration: capture baseline from first N readings
+            let calibrated = false;
+            let calibSamples = 0;
+            const CALIB_COUNT = 30; // average first 30 readings as baseline
+            let calibRollSum = 0, calibPitchSum = 0;
+            let baselineRoll = 0, baselinePitch = 0;
+
+            function connectWS() {
+                ws = new WebSocket('ws://localhost:8080');
+                ws.onopen = () => { const c = document.getElementById('conn-status'); c.textContent = '● Sensor Link Active'; c.style.color = '#00ff77'; };
+                ws.onclose = () => { const c = document.getElementById('conn-status'); c.textContent = '● Sensor Link Offline'; c.style.color = '#ff5555'; setTimeout(connectWS, 1500); };
+                ws.onmessage = (e) => {
+                    const d = JSON.parse(e.data); wsMsgCount++;
+
+                    // Auto-calibration: average first N readings as zero-point
+                    if (!calibrated) {
+                        calibRollSum += d.r;
+                        calibPitchSum += d.p;
+                        calibSamples++;
+                        if (calibSamples >= CALIB_COUNT) {
+                            baselineRoll = calibRollSum / CALIB_COUNT;
+                            baselinePitch = calibPitchSum / CALIB_COUNT;
+                            calibrated = true;
+                            console.log(`[CALIB] Baseline set: Roll=${baselineRoll.toFixed(1)}° Pitch=${baselinePitch.toFixed(1)}°`);
+                        }
+                        return; // skip movement until calibrated
+                    }
+
+                    // Use delta from baseline instead of absolute values
+                    const relRoll = d.r - baselineRoll;
+                    const relPitch = d.p - baselinePitch;
+
+                    GS.roll += (relRoll - GS.roll) * 0.45;
+                    GS.pitch += (relPitch - GS.pitch) * 0.45;
+                    GS.force += (d.f - GS.force) * 0.45;
+                    GS.emg += (d.e - GS.emg) * 0.45;
+                    if (wsMsgCount % 5 === 0) document.getElementById('imu-status').textContent = `Arm: R:${Math.round(relRoll)}° | P:${Math.round(relPitch)}°`;
+                };
+            }
+            connectWS();
+
+            // ---- MAIN LOOP ----
+            let secondTimer = 0;
+            let lastCommentIdx = -1;
+
+            function startLoop() {
+                renderer.setAnimationLoop(() => {
+                    const dt = Math.min(clock.getDelta(), 0.1);
+                    const time = clock.getElapsedTime();
+
+                    if (GS.sessionDone) return;
+
+                    // Animate bird wings
+                    if (mixer) {
+                        const warpedSpeed = 0.6 + (GS.speed / DIFF.speed) * 1.4;
+                        mixer.update(dt * warpedSpeed);
+                    }
+
+                    // Water animation
+                    water.material.uniforms['time'].value += dt;
+
+                    // ---- PHYSICS ----
+                    let tx = (GS.roll / 45.0) * 150.0; if (Math.abs(tx) > 150) tx = Math.sign(tx) * 150;
+
+                    // Ring Pre-move logic (Vertical Auto-Aim)
+                    let targetRing = null;
+                    let minZDiff = Infinity;
+                    rings.forEach(r => {
+                        if (r.userData.active && !r.userData.passed && r.position.z > birdGroup.position.z + 10) {
+                            let diff = r.position.z - birdGroup.position.z;
+                            if (diff < minZDiff) {
+                                minZDiff = diff;
+                                targetRing = r;
+                            }
+                        }
+                    });
+
+                    // Strict manual tracking only (bird strictly tied to IMU sensor)
+                    let ty = (-GS.pitch / 35.0) * 150.0;
+
+                    // ── HARDWARE SERVO PREDICTION ──
+                    // Send the exact servo angle the arm needs to be at for the next ring.
+                    // Ring at TOP (high Y) → servo near 45° (bent arm)
+                    // Ring at BOTTOM (low Y) → servo near 180° (straight arm)
+                    if (targetRing && minZDiff < 1200) {
+                        // Ring Y typically ranges from ~0 to ~120
+                        let ringY = targetRing.position.y;
+                        // Clamp Y to known range
+                        let clampedY = Math.max(-10, Math.min(130, ringY));
+                        // Map: Y=130 → servo=45°, Y=-10 → servo=180°
+                        let servoAngle = Math.round(180 - ((clampedY + 10) / 140) * 135);
+                        servoAngle = Math.max(45, Math.min(180, servoAngle));
+
+                        // Throttle to ~10Hz to avoid flooding serial
+                        if (!GS._lastServoSend || (Date.now() - GS._lastServoSend) > 100) {
+                            GS._lastServoSend = Date.now();
+                            if (ws && ws.readyState === WebSocket.OPEN) {
+                                ws.send(JSON.stringify({ cmd: "servo_angle", val: servoAngle }));
+                            }
+                        }
+                    }
+
+                    GS.sx += (tx - GS.sx) * dt * 2.8;
+                    GS.sy += (ty - GS.sy) * dt * 2.8;
+                    GS.sroll += (-(GS.roll * 0.8) * (Math.PI / 180) - GS.sroll) * dt * 3.5;
+                    GS.spitch += ((GS.pitch * 0.6) * (Math.PI / 180) - GS.spitch) * dt * 3.5;
+
+                    birdGroup.position.x = GS.sx;
+                    birdGroup.position.y = Math.max(-35, GS.sy);
+                    GS.speed += (DIFF.speed - GS.speed) * dt * 2.0;
+                    birdGroup.position.z += GS.speed * dt;
+                    if (GS.speed > GS.peakSpeed) GS.peakSpeed = GS.speed;
+
+                    birdGroup.rotation.z = Math.sin(time * 0.6) * 0.06 + GS.sroll;
+                    birdGroup.rotation.x = Math.cos(time * 0.4) * 0.04 + GS.spitch;
+
+                    // ---- CAMERA ----
+                    camera.position.x += (birdGroup.position.x * 0.35 - camera.position.x) * dt * 3;
+                    camera.position.y += (birdGroup.position.y * 0.3 + 15 - camera.position.y) * dt * 3;
+                    camera.position.z = birdGroup.position.z - 50;
+                    camera.lookAt(birdGroup.position.x, birdGroup.position.y, birdGroup.position.z + 150);
+
+                    // Water follows
+                    water.position.x = camera.position.x;
+                    water.position.z = camera.position.z;
+
+                    // ---- SPAWN RINGS ----
+                    GS.ringTimer -= dt;
+                    if (GS.ringTimer <= 0) { spawnRing(); GS.ringTimer = DIFF.spawnInterval + Math.random() * 0.5; }
+
+                    // ---- COLLISION ----
+                    rings.forEach(r => {
+                        if (!r.userData.active) return;
+                        // Gentle bobbing
+                        r.position.y += Math.sin(time * 1.8 + r.userData.phase) * dt * 8;
+                        // Slow ring-facing spin
+                        r.rotation.z += dt * 0.5;
+
+                        if (r.position.z < birdGroup.position.z - 40) { r.userData.active = false; r.visible = false; }
+                        if (!r.userData.passed) {
+                            const dist = birdGroup.position.distanceTo(r.position);
+                            const hitRadius = 13 * r.scale.x;
+                            if (dist < hitRadius && Math.abs(birdGroup.position.z - r.position.z) < 20) {
+                                r.userData.passed = true;
+                                // Collection flash green
+                                r.material.color.setHex(0x00ff77); r.material.emissive.setHex(0x00aa44);
+                                emitBurst(r.position.x, r.position.y, r.position.z, 0, 1, 0.47, 50);
+                                playCollectChime();
+                                showCommentary(COMMENTS_COLLECT[Math.floor(Math.random() * COMMENTS_COLLECT.length)], 2500);
+                                GS.ringsCollected++;
+                                GS.score += Math.floor(50 * DIFF.ringScale);
+                                setTimeout(() => { r.userData.active = false; r.visible = false; }, 400);
+
+                                // Milestones
+                                const pct = GS.ringsSpawned > 0 ? Math.round((GS.ringsCollected / GS.ringsSpawned) * 100) : 0;
+                                [25, 50, 75].forEach(m => { if (pct >= m && !GS.milestonesHit.has(m)) { GS.milestonesHit.add(m); triggerMilestone(m); } });
+                            }
+                        }
+                    });
+
+                    // ---- PARTICLES ----
+                    for (let i = 0; i < P; i++) if (pLife[i] > 0) {
+                        pLife[i] -= dt; pPos[i * 3] += pVel[i * 3] * dt; pPos[i * 3 + 1] += pVel[i * 3 + 1] * dt; pPos[i * 3 + 2] += pVel[i * 3 + 2] * dt;
+                        if (pLife[i] <= 0) pPos[i * 3 + 1] = -9999;
+                    }
+                    particles.geometry.attributes.position.needsUpdate = true;
+
+                    // ---- TIMER ----
+                    secondTimer += dt;
+                    if (secondTimer >= 1) { GS.timeLeft = Math.max(0, GS.timeLeft - 1); secondTimer = 0; updateTimerHUD(); }
+                    if (GS.timeLeft <= 0) { triggerMilestone(100); setTimeout(endSession, 1500); GS.timeLeft = 1; }
+
+                    // ---- PERIODIC COMMENTARY ----
+                    GS.commentaryTimer -= dt;
+                    if (GS.commentaryTimer <= 0) {
+                        GS.commentaryTimer = 25 + Math.random() * 15;
+                        let idx = Math.floor(Math.random() * COMMENTS_PERIODIC.length);
+                        while (idx === lastCommentIdx) idx = Math.floor(Math.random() * COMMENTS_PERIODIC.length);
+                        lastCommentIdx = idx;
+                        showCommentary(COMMENTS_PERIODIC[idx], 5000);
+                    }
+
+                    // ---- HUD ----
+                    document.getElementById('hud-score').textContent = GS.score.toLocaleString();
+                    document.getElementById('hud-rings').textContent = `${GS.ringsCollected} / ${GS.ringsSpawned}`;
+
+                    renderer.render(scene, camera);
+                });
+            }
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }; // end window.onload
+    </script>
+</body>
+
+</html>

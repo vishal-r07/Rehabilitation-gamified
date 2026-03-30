@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>3D Arm & Maze - Hand Rehabilitation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: auto;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4466;
+            display: inline-block;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .dot.on {
+            background: #00ff88;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .data {
+            display: flex;
+            gap: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .data span {
+            color: #00ffff;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .modes {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .mode {
+            padding: 15px 30px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode.active {
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            color: #000;
+            border-color: transparent;
+        }
+
+        .ctrls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn1 {
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            color: #000;
+        }
+
+        .btn2 {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .box {
+            background: rgba(10, 10, 30, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #00ffff;
+            min-width: 400px;
+        }
+
+        .box h2 {
+            color: #00ffff;
+            margin-bottom: 25px;
+        }
+
+        .grp {
+            margin-bottom: 20px;
+        }
+
+        .grp label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+
+        .grp input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btns button {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="ui">
+        <div class="top">
+            <div class="panel">
+                <span class="dot" id="dot"></span>
+                <span id="status">Disconnected</span>
+            </div>
+            <div class="panel">
+                <div class="data">
+                    <div><span>R:</span><span id="r">0°</span></div>
+                    <div><span>P:</span><span id="p">0°</span></div>
+                    <div><span>Y:</span><span id="y">0°</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="modes">
+            <button class="mode active" id="armBtn">🦾 ARM</button>
+            <button class="mode" id="mazeBtn">🎮 MAZE</button>
+        </div>
+        <div class="ctrls">
+            <button class="btn1" id="connBtn">CONNECT</button>
+            <button class="btn2" id="resetBtn">RESET</button>
+        </div>
+    </div>
+    <div class="modal" id="modal">
+        <div class="box">
+            <h2>⚙️ Connect to Vega Aries</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">
+                Clicking Connect will open a browser prompt to select the Vega Aries USB port. Make sure the board is
+                plugged in!
+            </p>
+            <div class="btns">
+                <button class="btn2" id="cancel">Cancel</button>
+                <button class="btn1" id="go">Select Port</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            console.log('✅ Libraries loaded');
+
+            let scene, cam, rend, ws, conn = false;
+            let roll = 0, pitch = 0, yaw = 0, mode = 'arm';
+            let arm, maze, ball, ballBody, world;
+
+            // Init
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            cam = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+            cam.position.set(5, 5, 10);
+            rend = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+            rend.setSize(innerWidth, innerHeight);
+            rend.shadowMap.enabled = true;
+
+            function setupArm() {
+                // Grid
+                const grid = new THREE.GridHelper(20, 20, 0x00ffff, 0x333333);
+                grid.position.y = -5;
+                scene.add(grid);
+
+                // Lights
+                scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                const l1 = new THREE.DirectionalLight(0xffffff, 1);
+                l1.position.set(10, 10, 10);
+                scene.add(l1);
+                const l2 = new THREE.DirectionalLight(0x00ffff, 0.5);
+                l2.position.set(-10, 5, -10);
+                scene.add(l2);
+
+                // Arm
+                arm = new THREE.Group();
+                const skin = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.6 });
+                const joint = new THREE.MeshStandardMaterial({
+                    color: 0xff6b6b, emissive: 0xff0088,
+                    emissiveIntensity: 0.3, metalness: 0.7
+                });
+
+                const u = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 5, 16), skin);
+                u.position.y = 2.5;
+                arm.add(u);
+
+                arm.add(new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), joint));
+
+                const f = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 4, 16), skin);
+                f.position.y = -2;
+                arm.add(f);
+
+                const w = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), joint);
+                w.position.y = -4;
+                arm.add(w);
+
+                const h = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2), skin);
+                h.position.y = -4.5;
+                arm.add(h);
+
+                scene.add(arm);
+                console.log('ARM ready');
+            }
+
+            function setupMaze() {
+                // Physics
+                world = new CANNON.World();
+                world.gravity.set(0, -9.82, 0);
+
+                // Lights
+                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                const l = new THREE.DirectionalLight(0xffffff, 1);
+                l.position.set(10, 15, 10);
+                l.castShadow = true;
+                scene.add(l);
+
+                // Maze platform
+                maze = new THREE.Group();
+                const floor = new THREE.Mesh(
+                    new THREE.BoxGeometry(10, 0.2, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x444444 })
+                );
+                floor.receiveShadow = true;
+                maze.add(floor);
+
+                const floorBody = new CANNON.Body({ mass: 0 });
+                floorBody.addShape(new CANNON.Box(new CANNON.Vec3(5, 0.1, 5)));
+                world.addBody(floorBody);
+
+                // Walls
+                const wallMat = new THREE.MeshStandardMaterial({
+                    color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.2
+                });
+
+                const addWall = (x, z, w, d) => {
+                    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, 1, d), wallMat);
+                    wall.position.set(x, 0.5, z);
+                    maze.add(wall);
+                    const wb = new CANNON.Body({ mass: 0 });
+                    wb.addShape(new CANNON.Box(new CANNON.Vec3(w / 2, 0.5, d / 2)));
+                    wb.position.set(x, 0.5, z);
+                    world.addBody(wb);
+                };
+
+                addWall(0, 5, 10, 0.2);
+                addWall(0, -5, 10, 0.2);
+                addWall(5, 0, 0.2, 10);
+                addWall(-5, 0, 0.2, 10);
+                addWall(-2, 2, 0.2, 4);
+                addWall(2, -2, 0.2, 4);
+                addWall(0, 0, 4, 0.2);
+
+                // Goal
+                const goal = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.8, 0.8, 0.1, 32),
+                    new THREE.MeshStandardMaterial({
+                        color: 0x00ff88, emissive: 0x00ff88, emissiveIntensity: 0.5
+                    })
+                );
+                goal.position.set(3, 0.15, 3);
+                goal.rotation.x = Math.PI / 2;
+                maze.add(goal);
+                scene.add(maze);
+
+                // Ball
+                ball = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.3, 32, 32),
+                    new THREE.MeshStandardMaterial({
+                        color: 0xff00ff, emissive: 0xff00ff,
+                        emissiveIntensity: 0.3, metalness: 0.5
+                    })
+                );
+                ball.castShadow = true;
+                scene.add(ball);
+
+                ballBody = new CANNON.Body({ mass: 1 });
+                ballBody.addShape(new CANNON.Sphere(0.3));
+                ballBody.position.set(-3, 2, -3);
+                world.addBody(ballBody);
+
+                console.log('MAZE ready');
+            }
+
+            function clear() {
+                while (scene.children.length > 0) scene.remove(scene.children[0]);
+                arm = null; maze = null; ball = null; ballBody = null; world = null;
+            }
+
+            function switchMode(m) {
+                mode = m;
+                document.getElementById('armBtn').classList.toggle('active', m === 'arm');
+                document.getElementById('mazeBtn').classList.toggle('active', m === 'maze');
+                clear();
+                if (m === 'arm') {
+                    setupArm();
+                    cam.position.set(5, 5, 10);
+                } else {
+                    setupMaze();
+                    cam.position.set(0, 12, 12);
+                }
+                cam.lookAt(0, 0, 0);
+            }
+
+            // UI
+            document.getElementById('armBtn').onclick = () => switchMode('arm');
+            document.getElementById('mazeBtn').onclick = () => switchMode('maze');
+
+            let serialPort = null;
+            let serialReader = null;
+            let serialStreamClosed = null;
+
+            async function disconnectSerial() {
+                if (serialReader) {
+                    await serialReader.cancel();
+                    await serialStreamClosed.catch(() => { });
+                    serialReader = null;
+                }
+                if (serialPort) {
+                    await serialPort.close();
+                    serialPort = null;
+                }
+                conn = false;
+                document.getElementById('dot').classList.remove('on');
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('connBtn').textContent = 'CONNECT';
+            }
+
+            document.getElementById('connBtn').onclick = async () => {
+                if (conn) {
+                    await disconnectSerial();
+                } else {
+                    document.getElementById('modal').classList.add('show');
+                }
+            };
+
+            document.getElementById('cancel').onclick = () => {
+                document.getElementById('modal').classList.remove('show');
+            };
+
+            document.getElementById('go').onclick = async () => {
+                document.getElementById('modal').classList.remove('show');
+
+                try {
+                    serialPort = await navigator.serial.requestPort();
+                    await serialPort.open({ baudRate: 115200 });
+
+                    conn = true;
+                    document.getElementById('dot').classList.add('on');
+                    document.getElementById('status').textContent = 'Connected (USB)';
+                    document.getElementById('connBtn').textContent = 'DISCONNECT';
+                    console.log('USB Serial Connected!');
+
+                    // Setup stream reading
+                    const textDecoder = new TextDecoderStream();
+                    serialStreamClosed = serialPort.readable.pipeTo(textDecoder.writable);
+                    serialReader = textDecoder.readable
+                        .pipeThrough(new TransformStream(new LineBreakTransformer()))
+                        .getReader();
+
+                    // Read loop
+                    while (true) {
+                        const { value, done } = await serialReader.read();
+                        if (done) {
+                            serialReader.releaseLock();
+                            break;
+                        }
+                        if (value) {
+                            try {
+                                const d = JSON.parse(value);
+                                roll = d.r || d.roll || 0;
+                                pitch = d.p || d.pitch || 0;
+                                yaw = d.y || d.yaw || 0;
+                                document.getElementById('r').textContent = roll.toFixed(1) + '°';
+                                document.getElementById('p').textContent = pitch.toFixed(1) + '°';
+                                document.getElementById('y').textContent = yaw.toFixed(1) + '°';
+                            } catch (e) {
+                                // Ignore parsing errors for non-JSON debug strings
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Serial Error:', err);
+                    await disconnectSerial();
+                }
+            };
+
+            class LineBreakTransformer {
+                constructor() {
+                    this.chunks = "";
+                }
+                transform(chunk, controller) {
+                    this.chunks += chunk;
+                    const lines = this.chunks.split('\n');
+                    this.chunks = lines.pop(); // Keep incomplete line
+                    lines.forEach(line => controller.enqueue(line));
+                }
+                flush(controller) {
+                    if (this.chunks !== "") {
+                        controller.enqueue(this.chunks);
+                    }
+                }
+            }
+
+            document.getElementById('resetBtn').onclick = () => {
+                if (mode === 'arm') {
+                    cam.position.set(5, 5, 10);
+                } else {
+                    cam.position.set(0, 12, 12);
+                }
+                cam.lookAt(0, 0, 0);
+            };
+
+            window.addEventListener('resize', () => {
+                cam.aspect = innerWidth / innerHeight;
+                cam.updateProjectionMatrix();
+                rend.setSize(innerWidth, innerHeight);
+            });
+
+            // Animate
+            function loop() {
+                requestAnimationFrame(loop);
+
+                if (conn) {
+                    if (mode === 'arm' && arm) {
+                        const rx = pitch * Math.PI / 180;
+                        const ry = yaw * Math.PI / 180;
+                        const rz = roll * Math.PI / 180;
+                        arm.rotation.x += (rx - arm.rotation.x) * 0.1;
+                        arm.rotation.y += (ry - arm.rotation.y) * 0.1;
+                        arm.rotation.z += (rz - arm.rotation.z) * 0.1;
+                    } else if (mode === 'maze' && maze && world) {
+                        const tx = pitch * Math.PI / 180 * 0.3;
+                        const tz = roll * Math.PI / 180 * 0.3;
+                        maze.rotation.x += (tx - maze.rotation.x) * 0.1;
+                        maze.rotation.z += (tz - maze.rotation.z) * 0.1;
+                        world.step(1 / 60);
+                        if (ball && ballBody) {
+                            ball.position.copy(ballBody.position);
+                            ball.quaternion.copy(ballBody.quaternion);
+                        }
+                    }
+                }
+
+                rend.render(scene, cam);
+            }
+
+            // Start
+            setupArm();
+            loop();
+            console.log('🎮 READY - Click CONNECT button!');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Bicep Curl Trainer - Form Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0f2460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .connection-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input,
+        select {
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        input {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-connect {
+            background: linear-gradient(135deg, #00d4ff, #0096c7);
+            color: #fff;
+        }
+
+        .btn-disconnect {
+            background: linear-gradient(135deg, #ff6b6b, #ee5253);
+            color: #fff;
+        }
+
+        .btn-calibrate {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: #fff;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+        }
+
+        .status-dot.ok {
+            background: #00ff88;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 700px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        /* Form Feedback - Big Alert */
+        .form-feedback {
+            text-align: center;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .form-feedback.good {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(46, 204, 113, 0.05));
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .form-feedback.bad {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.25), rgba(231, 76, 60, 0.15));
+            border-color: rgba(255, 107, 107, 0.5);
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .form-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .form-message {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .form-detail {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        /* Curl Stats */
+        .curl-display {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .curl-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .curl-stat {
+            text-align: center;
+        }
+
+        .curl-count {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .curl-count.total {
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .curl-count.good {
+            background: linear-gradient(135deg, #00ff88, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .curl-label {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        /* Error Badges */
+        .error-counts {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .error-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .error-badge.elbow {
+            background: rgba(231, 76, 60, 0.25);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+        }
+
+        .error-badge.wrist {
+            background: rgba(241, 196, 15, 0.25);
+            border: 1px solid rgba(241, 196, 15, 0.4);
+        }
+
+        .error-badge.jerky {
+            background: rgba(155, 89, 182, 0.25);
+            border: 1px solid rgba(155, 89, 182, 0.4);
+        }
+
+        /* Data Rows */
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        .data-value {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Bars */
+        .bar-container {
+            margin-top: 6px;
+        }
+
+        .bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.1s ease;
+        }
+
+        .bar-fill.roll {
+            background: linear-gradient(90deg, #ff6b6b, #00ff88, #ff6b6b);
+        }
+
+        .bar-fill.pitch {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        }
+
+        .bar-fill.yaw {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+
+        .bar-fill.force {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            height: 12px;
+        }
+
+        /* Log Panel */
+        .log-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+            opacity: 0.8;
+        }
+
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+
+        .log-entry.success {
+            color: #00ff88;
+        }
+
+        .log-entry.warn {
+            color: #f39c12;
+        }
+
+        /* Sound Toggle */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .toggle {
+            width: 40px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle.active {
+            background: #00d4ff;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+
+        .toggle.active::after {
+            left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>💪 Bicep Curl Trainer</h1>
+
+        <!-- Connection Panel -->
+        <div class="panel">
+            <div class="connection-row">
+                <input type="text" id="ipInput" placeholder="ESP32 IP Address">
+                <button class="btn btn-connect" id="connectBtn" onclick="toggleConnection()">Connect</button>
+                <button class="btn btn-calibrate" id="calibrateBtn" onclick="calibrate()" disabled>Calibrate</button>
+                <button class="btn btn-reset" onclick="resetAll()">Reset</button>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot" id="wsDot"></div>
+                    <span id="wsStatus">Disconnected</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="imuDot"></div>
+                    <span id="imuStatus">IMU: --</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="sensorDot"></div>
+                    <span id="sensorStatus">Sensor: --</span>
+                </div>
+                <div class="toggle-container" style="margin-left: auto;">
+                    <span>🔊 Sound</span>
+                    <div class="toggle active" id="soundToggle" onclick="toggleSound()"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+
+            <!-- Form Feedback -->
+            <div class="panel form-feedback good full-width" id="formFeedback">
+                <div class="form-icon" id="formIcon">💪</div>
+                <div class="form-message" id="formMessage">Ready to Start</div>
+                <div class="form-detail" id="formDetail">Connect to ESP32 and calibrate IMU</div>
+            </div>
+
+            <!-- Curl Counter -->
+            <div class="panel curl-display full-width">
+                <div class="curl-stats">
+                    <div class="curl-stat">
+                        <div class="curl-count total" id="totalCurls">0</div>
+                        <div class="curl-label">Total Curls</div>
+                    </div>
+                    <div class="curl-stat">
+                        <div class="curl-count good" id="goodCurls">0</div>
+                        <div class="curl-label">Perfect Form</div>
+                    </div>
+                </div>
+                <div class="error-counts">
+                    <div class="error-badge elbow">🦾 Elbow: <span id="elbowCount">0</span></div>
+                    <div class="error-badge wrist">🤚 Wrist: <span id="wristCount">0</span></div>
+                    <div class="error-badge jerky">⚡ Jerky: <span id="jerkyCount">0</span></div>
+                </div>
+            </div>
+
+            <!-- IMU Panel -->
+            <div class="panel">
+                <div class="panel-title">IMU Orientation</div>
+
+                <div class="data-row">
+                    <span class="data-label">Roll (Wrist)</span>
+                    <span class="data-value" id="rollValue">0.0°</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar">
+                        <div class="bar-fill roll" id="rollBar"></div>
+                    </div>
+                </div>
+
+                <div class="data-row">
+                    <span class="data-label">Pitch (Curl)</span>
+                    <span class="data-value" id="pitchValue">0.0°</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar">
+                        <div class="bar-fill pitch" id="pitchBar"></div>
+                    </div>
+                </div>
+
+                <div class="data-row">
+                    <span class="data-label">Yaw (Swing)</span>
+                    <span class="data-value" id="yawValue">0.0°</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar">
+                        <div class="bar-fill yaw" id="yawBar"></div>
+                    </div>
+                </div>
+
+                <div class="data-row">
+                    <span class="data-label">Acceleration</span>
+                    <span class="data-value" id="accelValue">0.0 m/s²</span>
+                </div>
+            </div>
+
+            <!-- Force Sensor Panel -->
+            <div class="panel">
+                <div class="panel-title">Force Sensor</div>
+
+                <div class="data-row">
+                    <span class="data-label">Raw Value</span>
+                    <span class="data-value" id="sensorValue">0</span>
+                </div>
+
+                <div class="data-row">
+                    <span class="data-label">Arm State</span>
+                    <span class="data-value" id="armState">EXTENDED</span>
+                </div>
+
+                <div class="bar-container" style="margin-top: 10px;">
+                    <div class="bar" style="height: 16px;">
+                        <div class="bar-fill force" id="sensorGauge" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="data-row" style="margin-top: 10px;">
+                    <span class="data-label">Thresholds</span>
+                    <span class="data-value" id="thresholds">H:-- L:--</span>
+                </div>
+            </div>
+
+            <!-- Log Panel -->
+            <div class="panel full-width">
+                <div class="panel-title">Connection Log</div>
+                <div class="log-panel" id="logPanel">
+                    <div class="log-entry">Ready to connect...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let isConnected = false;
+        let soundEnabled = true;
+        let lastFormWarning = '';
+
+        // Audio for alerts
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBeep(freq = 440, duration = 100, type = 'sine') {
+            if (!soundEnabled) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.value = 0.1;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration / 1000);
+        }
+
+        function playGoodCurl() { playBeep(880, 100); setTimeout(() => playBeep(1100, 100), 100); }
+        function playBadForm() { playBeep(280, 200, 'square'); }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').classList.toggle('active', soundEnabled);
+        }
+
+        function log(msg, type = '') {
+            const panel = document.getElementById('logPanel');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${msg}`;
+            panel.appendChild(entry);
+            panel.scrollTop = panel.scrollHeight;
+            while (panel.children.length > 50) panel.removeChild(panel.firstChild);
+        }
+
+        // Save/load IP
+        function saveIP(ip) { localStorage.setItem('esp32_ip', ip); }
+        function loadIP() { return localStorage.getItem('esp32_ip') || ''; }
+
+        window.onload = function () {
+            document.getElementById('ipInput').value = loadIP();
+        };
+
+        function toggleConnection() {
+            isConnected ? disconnect() : connect();
+        }
+
+        function connect() {
+            const ip = document.getElementById('ipInput').value.trim();
+            if (!ip) { alert('Enter ESP32 IP'); return; }
+
+            saveIP(ip);
+            log(`Connecting to ${ip}:81...`);
+
+            try {
+                ws = new WebSocket(`ws://${ip}:81`);
+
+                ws.onopen = function () {
+                    log('Connected!', 'success');
+                    setConnectionStatus(true);
+                };
+
+                ws.onmessage = function (e) {
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (data.type === 'data') updateUI(data);
+                    } catch (err) {
+                        log('Invalid data received', 'error');
+                    }
+                };
+
+                ws.onerror = function () { log('Connection error', 'error'); };
+                ws.onclose = function () {
+                    log('Disconnected');
+                    setConnectionStatus(false);
+                    ws = null;
+                };
+
+            } catch (e) {
+                log('Connection failed: ' + e.message, 'error');
+            }
+        }
+
+        function disconnect() {
+            if (ws) { ws.close(); ws = null; }
+            setConnectionStatus(false);
+        }
+
+        function setConnectionStatus(connected) {
+            isConnected = connected;
+            document.getElementById('wsDot').classList.toggle('ok', connected);
+            document.getElementById('wsStatus').textContent = connected ? 'Connected' : 'Disconnected';
+            document.getElementById('connectBtn').textContent = connected ? 'Disconnect' : 'Connect';
+            document.getElementById('connectBtn').className = connected ? 'btn btn-disconnect' : 'btn btn-connect';
+            document.getElementById('calibrateBtn').disabled = !connected;
+        }
+
+        function calibrate() {
+            if (ws && isConnected) {
+                ws.send('calibrate');
+                log('Calibration request sent', 'warn');
+            }
+        }
+
+        function resetAll() {
+            if (ws && isConnected) {
+                ws.send('reset');
+                log('Reset request sent', 'warn');
+            }
+        }
+
+        let lastCurlCount = 0;
+
+        function updateUI(data) {
+            // Curl counts
+            const curls = data.curlCount || 0;
+            const good = data.goodFormCurls || 0;
+
+            document.getElementById('totalCurls').textContent = curls;
+            document.getElementById('goodCurls').textContent = good;
+
+            // Play sound on new curl
+            if (curls > lastCurlCount) {
+                if (data.formGood !== false) playGoodCurl();
+                lastCurlCount = curls;
+            }
+
+            // Error counts
+            document.getElementById('elbowCount').textContent = data.elbowFlareCount || 0;
+            document.getElementById('wristCount').textContent = data.wristTwistCount || 0;
+            document.getElementById('jerkyCount').textContent = data.jerkyMoveCount || 0;
+
+            // IMU status
+            const imuOk = data.imuConnected === true;
+            document.getElementById('imuDot').classList.toggle('ok', imuOk);
+            document.getElementById('imuStatus').textContent = imuOk
+                ? (data.isCalibrated ? 'IMU: Ready' : 'IMU: Need Calibrate')
+                : 'IMU: Not Found';
+
+            // Sensor status
+            const sensorOk = (data.rawValue || 0) > 0 || (data.sensorValue || 0) > 0;
+            document.getElementById('sensorDot').classList.toggle('ok', sensorOk);
+            document.getElementById('sensorStatus').textContent = sensorOk ? 'Sensor: OK' : 'Sensor: No Signal';
+
+            // IMU values
+            document.getElementById('rollValue').textContent = (data.roll || 0).toFixed(1) + '°';
+            document.getElementById('pitchValue').textContent = (data.pitch || 0).toFixed(1) + '°';
+            document.getElementById('yawValue').textContent = (data.yaw || 0).toFixed(1) + '°';
+            document.getElementById('accelValue').textContent = (data.accel || 0).toFixed(2) + ' m/s²';
+
+            // IMU bars
+            document.getElementById('rollBar').style.width = (((data.roll || 0) + 180) / 360 * 100) + '%';
+            document.getElementById('pitchBar').style.width = (((data.pitch || 0) + 90) / 180 * 100) + '%';
+            document.getElementById('yawBar').style.width = (((data.yaw || 0) + 180) / 360 * 100) + '%';
+
+            // Force sensor
+            document.getElementById('sensorValue').textContent = data.rawValue || 0;
+            document.getElementById('armState').textContent = data.state || 'EXTENDED';
+            document.getElementById('sensorGauge').style.width = ((data.rawValue || 0) / 4095 * 100) + '%';
+            document.getElementById('thresholds').textContent = `H:${data.thresholdHigh || '--'} L:${data.thresholdLow || '--'}`;
+
+            // Form feedback
+            const feedback = document.getElementById('formFeedback');
+            const icon = document.getElementById('formIcon');
+            const message = document.getElementById('formMessage');
+            const detail = document.getElementById('formDetail');
+
+            if (data.state === 'BENT') {
+                if (data.formGood) {
+                    feedback.className = 'panel form-feedback good full-width';
+                    icon.textContent = '✓';
+                    message.textContent = 'Good Form!';
+                    detail.textContent = 'Keep it up!';
+                } else {
+                    feedback.className = 'panel form-feedback bad full-width';
+
+                    // Play alert on new warning
+                    if (data.formWarning && data.formWarning !== lastFormWarning) {
+                        playBadForm();
+                        lastFormWarning = data.formWarning;
+                    }
+
+                    switch (data.formWarning) {
+                        case 'WRIST_TWIST':
+                            icon.textContent = '🤚';
+                            message.textContent = 'Keep Wrist Straight!';
+                            detail.textContent = 'Avoid rotating your wrist';
+                            break;
+                        case 'ELBOW_FLARE':
+                            icon.textContent = '🦾';
+                            message.textContent = 'Elbow Flaring Out!';
+                            detail.textContent = 'Keep elbow close to body';
+                            break;
+                        case 'JERKY_MOVE':
+                            icon.textContent = '⚡';
+                            message.textContent = 'Too Fast!';
+                            detail.textContent = 'Control the movement';
+                            break;
+                        default:
+                            icon.textContent = '⚠️';
+                            message.textContent = 'Check Form';
+                            detail.textContent = 'Something is off';
+                    }
+                }
+            } else {
+                lastFormWarning = '';
+                feedback.className = 'panel form-feedback good full-width';
+                icon.textContent = '💪';
+                message.textContent = 'Ready';
+                const score = curls > 0 ? Math.round((good / curls) * 100) : 100;
+                detail.textContent = `Form Score: ${score}%`;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RehabiHand - 3D Hand Rehabilitation Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Connection Status Panel -->
+    <div id="connection-panel" class="glass-panel">
+        <div class="status-indicator">
+            <div id="connection-dot" class="dot disconnected"></div>
+            <span id="connection-text">Disconnected</span>
+        </div>
+        <div class="sensor-stats">
+            <div class="stat">
+                <span class="label">IMU</span>
+                <span id="imu-status" class="value">--</span>
+            </div>
+            <div class="stat">
+                <span class="label">EMG</span>
+                <span id="emg-value" class="value">0%</span>
+            </div>
+            <div class="stat">
+                <span class="label">Latency</span>
+                <span id="latency" class="value">--ms</span>
+            </div>
+        </div>
+        <button id="connect-btn" class="btn-primary">Connect Vega Aries</button>
+    </div>
+
+    <!-- Score & Progress Panel -->
+    <div id="score-panel" class="glass-panel">
+        <div class="score-display">
+            <h3>Score</h3>
+            <div id="current-score" class="score-big">0</div>
+        </div>
+        <div class="progress-bars">
+            <div class="progress-item">
+                <span class="label">Level Progress</span>
+                <div class="progress-bar">
+                    <div id="level-progress" class="progress-fill"></div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="value" id="total-reps">0</span>
+                    <span class="label">Total Reps</span>
+                </div>
+                <div class="stat-box">
+                    <span class="value" id="perfect-form">0</span>
+                    <span class="label">Perfect</span>
+                </div>
+                <div class="stat-box">
+                    <span class="value" id="current-level">1</span>
+                    <span class="label">Level</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Selection Panel -->
+    <div id="game-selector" class="glass-panel">
+        <h2>Rehabilitation Games</h2>
+        <div class="game-grid">
+            <div class="game-card" data-game="rom">
+                <div class="game-icon">🤚</div>
+                <h3>Range of Motion</h3>
+                <p>Improve finger flexibility</p>
+            </div>
+            <div class="game-card" data-game="grip">
+                <div class="game-icon">💪</div>
+                <h3>Grip Strength</h3>
+                <p>Build muscle power</p>
+            </div>
+            <div class="game-card" data-game="coordination">
+                <div class="game-icon">🎯</div>
+                <h3>Coordination</h3>
+                <p>Master hand gestures</p>
+            </div>
+            <div class="game-card" data-game="manipulation">
+                <div class="game-icon">🎲</div>
+                <h3>Object Control</h3>
+                <p>Precise movements</p>
+            </div>
+            <div class="game-card" data-game="endurance">
+                <div class="game-icon">⏱️</div>
+                <h3>Endurance Mode</h3>
+                <p>Build stamina</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main 3D Viewport -->
+    <div id="viewport-container">
+        <canvas id="render-canvas"></canvas>
+
+        <!-- Game UI Overlay -->
+        <div id="game-overlay" class="hidden">
+            <div class="game-header">
+                <h2 id="game-title">Game Name</h2>
+                <button id="exit-game" class="btn-secondary">Exit</button>
+            </div>
+            <div id="game-instructions" class="instructions-panel">
+                <!-- Dynamic game instructions -->
+            </div>
+            <div id="game-feedback" class="feedback-panel">
+                <!-- Real-time feedback -->
+            </div>
+        </div>
+
+        <!-- Form Feedback Indicators -->
+        <div id="form-indicators" class="hidden">
+            <div class="indicator" id="form-good">
+                <span class="icon">✓</span>
+                <span>Good Form</span>
+            </div>
+            <div class="indicator warning" id="form-warning">
+                <span class="icon">⚠</span>
+                <span id="warning-text">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Notification -->
+    <div id="achievement-popup" class="achievement hidden">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-text">
+            <h3 id="achievement-title">Achievement Unlocked!</h3>
+            <p id="achievement-desc">Description</p>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="glass-panel hidden">
+        <h2>Settings</h2>
+        <div class="settings-content">
+            <div class="setting-group">
+                <p>Use the "Connect Vega Aries" button on the top left to connect securely via USB.</p>
+            </div>
+            <div class="setting-group">
+                <label>Difficulty</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Visual Quality</label>
+                <select id="quality">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high" selected>High</option>
+                    <option value="ultra">Ultra</option>
+                </select>
+            </div>
+            <button id="calibrate-btn" class="btn-primary">Calibrate Sensors</button>
+        </div>
+    </div>
+
+    <!-- Settings Toggle Button -->
+    <button id="settings-toggle" class="floating-btn">⚙️</button>
+
+    <!-- Three.js and Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/serial_client.js"></script>
+    <script src="js/hand_model.js"></script>
+    <script src="js/animation_controller.js"></script>
+    <script src="js/scene_manager.js"></script>
+    <script src="js/game_engine.js"></script>
+    <script src="js/gamification_system.js"></script>
+    <script src="js/feedback_system.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

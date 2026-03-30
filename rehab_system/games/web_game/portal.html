@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HYPERION Clinical Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050a14;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent: #00e5ff;
+            --accent-hover: #00bdf2;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.1), transparent 25%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .glass {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00e5ff, #0077ff);
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 160, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 160, 255, 0.5);
+        }
+
+        input,
+        select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Login View */
+        #login-view {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 50px 40px;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .logo-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .logo-sub {
+            color: var(--text-sub);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Dashboard View */
+        #dashboard-view {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .greeting-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .greeting-sub {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 30px;
+        }
+
+        /* Quick Acton Panel (Start Therapist) */
+        .action-panel {
+            padding: 40px 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-icon {
+            font-size: 56px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.4);
+        }
+
+        .action-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .action-desc {
+            color: var(--text-sub);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* History Panel */
+        .history-panel {
+            padding: 30px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            color: var(--text-sub);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td {
+            padding: 18px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .score-badge {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent);
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view">
+        <div class="login-card glass">
+            <div class="logo-area">
+                <span class="material-icons-round logo-icon">medical_services</span>
+                <div class="logo-title">HYPERION</div>
+                <div class="logo-sub">CLINICAL REHAB PORTAL</div>
+            </div>
+
+            <div style="display:flex; margin-bottom:24px; gap:10px;">
+                <button id="tab-login" onclick="switchTab('login')"
+                    style="flex:1; padding:12px; border-radius:10px; border:none; background:rgba(0, 229, 255, 0.15); color:#00e5ff; font-weight:700; cursor:pointer; font-family:inherit;">SIGN
+                    IN</button>
+                <button id="tab-signup" onclick="switchTab('signup')"
+                    style="flex:1; padding:12px; border-radius:10px; border:none; background:rgba(255, 255, 255, 0.05); color:var(--text-sub); font-weight:600; cursor:pointer; font-family:inherit;">REGISTER
+                    NEW</button>
+            </div>
+
+            <form id="login-form">
+                <label
+                    style="display:block; font-size:13px; color:var(--text-sub); margin-bottom:8px; font-weight:600;">Patient
+                    ID (MRN)</label>
+                <input type="text" id="login-pid" placeholder="e.g. PT-1002" required>
+
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Access Records</button>
+            </form>
+
+            <form id="signup-form" class="hidden">
+                <label
+                    style="display:block; font-size:13px; color:var(--text-sub); margin-bottom:8px; font-weight:600;">Assign
+                    Patient ID</label>
+                <input type="text" id="signup-pid" placeholder="e.g. PT-1002" required>
+
+                <label
+                    style="display:block; font-size:13px; color:var(--text-sub); margin-bottom:8px; font-weight:600;">Full
+                    Name</label>
+                <input type="text" id="signup-name" placeholder="First Last" required>
+
+                <button type="submit" class="btn-primary"
+                    style="background:linear-gradient(135deg, #00ff77, #00aa44); width:100%; margin-top:10px; box-shadow: 0 4px 15px rgba(0, 255, 119, 0.3);">Create
+                    Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="hidden">
+        <header>
+            <div>
+                <div class="greeting-sub">Patient Dashboard</div>
+                <div class="greeting-title">Welcome, <span id="dash-name">Patient</span></div>
+                <div style="color:var(--text-sub); font-size:14px;">MRN: <span id="dash-pid">---</span></div>
+            </div>
+            <button class="btn-primary"
+                style="background:rgba(255,255,255,0.1); box-shadow:none; color:var(--text-main);"
+                onclick="logout()">Exit Portal</button>
+        </header>
+
+        <div class="dashboard-grid">
+
+            <!-- History Table -->
+            <div class="history-panel glass">
+                <div class="panel-header">
+                    <div class="panel-title"><span class="material-icons-round">history</span> Session History</div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Exercise Type</th>
+                                <th>Duration</th>
+                                <th>Success Rate</th>
+                                <th>Mobility Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:var(--text-sub); padding:40px;">Loading
+                                    history...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Action: Launch 3D Therapy -->
+            <div class="action-panel glass" style="grid-row: 1 / 3; align-self: start; position: sticky; top: 40px;">
+                <span class="material-icons-round action-icon">360</span>
+                <div class="action-title">Start Flight Therapy</div>
+                <div class="action-desc" style="margin-bottom:15px;">Configure your session parameters below before
+                    launching the immersive WebGL environment.</div>
+
+                <div style="width:100%; text-align:left; margin-bottom:15px;">
+                    <label
+                        style="display:block; font-size:12px; font-weight:700; color:#00e5ff; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">⏱️
+                        Session Duration</label>
+                    <select id="cfg-duration"
+                        style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; width:100%; color:#fff; font-family:inherit; margin-bottom:20px;">
+                        <option value="120">2 minutes (Light Warm-Up)</option>
+                        <option value="180">3 minutes (Short Session)</option>
+                        <option value="300" selected>5 minutes (Standard Session)</option>
+                        <option value="600">10 minutes (Full Session)</option>
+                        <option value="900">15 minutes (Extended)</option>
+                    </select>
+
+                    <label
+                        style="display:block; font-size:12px; font-weight:700; color:#00e5ff; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">🎯
+                        Difficulty</label>
+                    <select id="cfg-diff"
+                        style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; width:100%; color:#fff; font-family:inherit; margin-bottom:20px;">
+                        <option value="easy">Easy (Large Rings, Slow)</option>
+                        <option value="medium" selected>Medium (Standard)</option>
+                        <option value="hard">Hard (Small Rings, Fast)</option>
+                    </select>
+
+                    <label
+                        style="display:block; font-size:12px; font-weight:700; color:#00e5ff; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">💪
+                        Exercise Type</label>
+                    <select id="cfg-type"
+                        style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; width:100%; color:#fff; font-family:inherit; margin-bottom:25px;">
+                        <option value="rom" selected>⭕ Full Range of Motion</option>
+                        <option value="flexion">⬆️ Shoulder Flexion</option>
+                        <option value="abduction">↔️ Shoulder Abduction</option>
+                        <option value="wrist">🔄 Wrist & Elbow Rotation</option>
+                    </select>
+                </div>
+
+                <button class="btn-primary" style="width:100%; padding:18px;" onclick="launchTherapy()">
+                    <span style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <span class="material-icons-round">rocket_launch</span> Launch 3D Environment
+                    </span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8081/api";
+        let curPatient = null;
+
+        function switchTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('signup-form').classList.add('hidden');
+                document.getElementById('tab-login').style.background = 'rgba(0, 229, 255, 0.15)';
+                document.getElementById('tab-login').style.color = '#00e5ff';
+                document.getElementById('tab-signup').style.background = 'rgba(255, 255, 255, 0.05)';
+                document.getElementById('tab-signup').style.color = 'var(--text-sub)';
+            } else {
+                document.getElementById('signup-form').classList.remove('hidden');
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('tab-signup').style.background = 'rgba(0, 255, 119, 0.15)';
+                document.getElementById('tab-signup').style.color = '#00ff77';
+                document.getElementById('tab-login').style.background = 'rgba(255, 255, 255, 0.05)';
+                document.getElementById('tab-login').style.color = 'var(--text-sub)';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pid = document.getElementById('login-pid').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    curPatient = data.data;
+                    localStorage.setItem('hyperion_patient', JSON.stringify(curPatient));
+                    showDashboard();
+                } else {
+                    alert("Login failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Database offline. Ensure main_with_game.py is running to spin up SQLite API.");
+                console.error(err);
+            }
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pid = document.getElementById('signup-pid').value.trim();
+            const name = document.getElementById('signup-name').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid, name })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    curPatient = data.data;
+                    localStorage.setItem('hyperion_patient', JSON.stringify(curPatient));
+                    showDashboard();
+                } else {
+                    alert("Registration failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Database offline. Ensure main_with_game.py is running to spin up SQLite API.");
+                console.error(err);
+            }
+        });
+
+        async function showDashboard() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            document.getElementById('dash-name').textContent = curPatient.name;
+            document.getElementById('dash-pid').textContent = curPatient.pid;
+            loadHistory();
+        }
+
+        async function loadHistory() {
+            const tbody = document.getElementById('history-body');
+            try {
+                const res = await fetch(`${API_URL}/sessions?pid=${curPatient.pid}`);
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    const rows = data.data;
+                    if (rows.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:40px;">No sessions found. Start reading to populate history.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = rows.map(r => `
+          <tr>
+            <td>${new Date(r.date.replace(' ', 'T') + 'Z').toLocaleString()}</td>
+            <td><strong style="color:#fff">${r.exercise_type.toUpperCase()}</strong><br><span style="font-size:12px; color:var(--text-sub)">${r.difficulty}</span></td>
+            <td>${Math.floor(r.duration / 60)}m ${r.duration % 60}s</td>
+            <td>
+              <div style="width:100px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin-bottom:4px; overflow:hidden;">
+                <div style="height:100%; width:${r.success_rate}%; background:${r.success_rate > 80 ? '#00e5ff' : r.success_rate > 50 ? '#ffcc00' : '#ff5555'}"></div>
+              </div>
+              <span style="font-size:12px;">${r.success_rate}%</span>
+            </td>
+            <td><span class="score-badge">${r.score.toLocaleString()}</span></td>
+          </tr>
+        `).join('');
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Error loading history. Database offline.</td></tr>`;
+            }
+        }
+
+        function launchTherapy() {
+            // Save configuration back to curPatient in localStorage for the game to read
+            curPatient.sessionConfig = {
+                duration: parseInt(document.getElementById('cfg-duration').value),
+                difficulty: document.getElementById('cfg-diff').value,
+                exerciseType: document.getElementById('cfg-type').value
+            };
+            localStorage.setItem('hyperion_patient', JSON.stringify(curPatient));
+
+            // Navigate completely to the WebGL game route instead
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('hyperion_patient');
+            curPatient = null;
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('pid').value = "";
+            document.getElementById('pname').value = "";
+        }
+
+        // Auto-login if returning from therapy game
+        window.onload = () => {
+            const saved = localStorage.getItem('hyperion_patient');
+            if (saved) {
+                curPatient = JSON.parse(saved);
+                showDashboard();
+            }
+        };
+    </script>
+</body>
+
+</html>

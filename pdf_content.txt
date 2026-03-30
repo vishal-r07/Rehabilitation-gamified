@@ -1,0 +1,1362 @@
+© October, 2022 Centre for Develop
+ 
+ 
+      
+      
+      
+      Product
+Product
+Product
+Product Reference
+Reference
+Reference
+Reference Manu
+Manu
+Manu
+Manu
+ 
+ 
+ 
+ 
+ 
+Description
+Description
+Description
+Description 
+ 
+The ARIES v2.0 is a full
+microprocessor programming a
+compliant VEGA Processor with
+full ecosystem with numerous 
+developed by Centre for Develop
+RISC-V (DIR-V) Program, by th
+of India. 
+Target areas/Applications
+ 
+Low power IoT, Sensor f
+devices, Toy and electronic
+networking and many more… 
+ARIES
+pment of Advanced Computing (C-DAC)
+Pag
+ual
+ual
+ual
+ual 
+y indigenous and a “Made in India” product to
+and embedded systems. This board is built u
+h easy-to-use hardware and software. The VEGA
+examples and support documentation. This bo
+pment of Advanced Computing (C-DAC) as par
+he Ministry of Electronics and Information Tech
+s 
+fusion, Smart Meter, System supervisors, Remo
+education equipment, Legacy 8/16-bit app
+S v2.0 
+ge | 1/16
+get started with basic 
+upon a RISC-V ISA 
+A SDK also provides 
+oard is designed and 
+rt of the Digital India 
+hnology, Government 
+ote sensors, Wearable 
+plications, Industrial 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 2/16
+ 
+ 
+ 
+Features
+Features
+Features
+Features 
+ 
+ 
+Controller                       THEJAS32 
+SRAM                            256KB 
+Flash 
+2MB 
+Input voltage   
+7-12V 
+PWM pins 
+8nos 
+Analog Input pins           4nos 
+SPI 
+3nos 
+UART 
+2nos 
+I2C 
+2nos 
+GPIO 
+20nos 
+RGB 
+1nos (3x GPIO) 
+PUSH BUTTON 
+2nos (2 x GPIO) 
+DC Current per I/O pin
+12mA 
+IO Voltage                      3.3V 
+Clock speed                    100MHz 
+Length 
+78mm 
+Width    
+66mm 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 3/16
+ 
+ 
+ 
+CON
+ON
+ON
+ONTENTS
+TENTS
+TENTS
+TENTS 
+ 
+1.   The Board                                                                                        
+4 
+2. Handling the Board                                                                                 4 
+2.1. Recommended Operating Conditions                                                         4 
+2.2. Power Consumption                                                                                    4 
+3. Functional Overview                                                                                 5 
+3.1. Board Topology 
+                                                                                      5 
+3.2. Processor                                                                                                      5 
+3.3. THEJAS32 pinout                                                                                        6 
+3.4. Power Tree                                                                                                   10 
+4. Board Operation                                                                                        11 
+4.1. Getting Started                                                                                             11 
+5. Connector Pinouts                                                                                     11 
+5.1. Board Outline & Mounting Holes                                                               14 
+6. Company Information                                                                               14 
+7. Reference Documentation                                                                         15 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 4/15
+ 
+ 
+1.1.1.1. The
+The
+The
+The Board
+Board
+Board
+Board 
+ARIES v2.0 is a development platform based on THEAJS32 ASIC which operates at a frequency of 
+100MHz. THEJAS32 SoC includes VEGA ET1031 Microprocessor, 256KB internal SRAM, Three 
+UARTs, Four SPIs, Three TIMERs, Eight PWMs, Three I2C interfaces, 32 GPIOs etc. This board 
+contains everything needed to support standalone operation. To get started simply connect the board 
+to a computer with a Micro-B USB Cable or power it with a AC/DC adapter or a battery. 
+2.2.2.2. Handling the Board
+Handling the Board
+Handling the Board
+Handling the Board 
+To avoid causing any damage or malfunctions; it is important to be mindful of the following points 
+when handling or operating the board: 
+• To prevent any damage make sure to handle the board while taking electrostatic 
+discharge (ESD) precautions. 
+• Power down the board by disconnecting the board from USB port. 
+ 
+2.1.
+2.1.
+2.1.
+2.1. Recommended
+Recommended
+Recommended
+Recommended Operating
+Operating
+Operating
+Operating Conditions
+Conditions
+Conditions
+Conditions 
+ 
+Symbo
+l 
+Description 
+Min 
+Max 
+ 
+Conservative thermal limits for 
+the whole board: 
+-0 °C (100°F) 
+85 °C ( 185°F) 
+2.2.
+2.2.
+2.2.
+2.2. Power
+Power
+Power
+Power Consumption
+Consumption
+Consumption
+Consumption 
+Symbol 
+Description 
+Min
+Typ 
+Max 
+Unit
+VINMax 
+Maximum input voltage from VIN pad 
+7 
+- 
+12 
+V 
+VUSBMax
+Maximum input voltage from USB connector 
+- 
+5.5 
+V 
+ 
+PMax 
+DC Current per I/O Pin 
+- 
+- 
+12 
+mA 
+ 
+ 
+ 
+ 
+ 
+ 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 5/15
+ 
+ 
+3.3.3.3. Functional
+Functional
+Functional
+Functional Overview
+Overview
+Overview
+Overview 
+3.1.
+3.1.
+3.1.
+3.1. Board Topology
+Board Topology
+Board Topology
+Board Topology 
+ Top view 
+ 
+ 
+Ref. 
+Description 
+Ref. 
+Description 
+J8 
+Power jack 
+U2 
+THEJAS32 SoC 
+J6 
+USB B Connector 
+U1 
+3.3V Regulator 
+J12 
+Boot Select Header 
+U4 
+100 MHz Oscillator 
+RESET 
+Reset Button 
+U5 
+SPI Boot Flash Memory
+BTN0 
+Push Button 0 for GPIO 
+U6 
+Op-amp 
+BTN1
+Push Button 1 for GPIO
+U7
+1.2V Regulator
+DIP_SW 
+DIP Switch for GPIO 
+LD1 
+RGB LED 
+ 
+3.2.
+3.2.
+3.2.
+3.2. Processor
+Processor
+Processor
+Processor 
+The main controller is THEAJS32 SoC which operates at a frequency of 100MHz. It includes 
+VEGA ET1031 Microprocessor, 256KB internal SRAM, Three UARTs, Four SPIs, Three 
+RESET
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 6/15
+ 
+ 
+TIMERs, Eight PWMs, Three I2C interface, 32 GPIOs. Most of its pins are connected to the 
+external headers, however some are reserved for internal communication. 
+3.3.
+3.3.
+3.3.
+3.3. THEJAS32
+THEJAS32
+THEJAS32
+THEJAS32 pinout
+pinout
+pinout
+pinout 
+ 
+Pin # 
+Pin Name 
+Pin Description 
+Type 
+1  
+GPIO19 
+General purpose IO GPIO1 (3). 
+I/O 
+2  
+GPIO18 
+General purpose IO GPIO1 (2). 
+I/O 
+3  
+VSSIO 
+Ground reference for IO pins. 
+S 
+4  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+5  
+GPIO17 
+General purpose IO GPIO1 (1). 
+I/O 
+6  
+GPIO16 
+General purpose IO GPIO1 (0). 
+I/O 
+7  
+SPI_MOSI3 
+SPI 3 Master Out Slave In. 
+O 
+8  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+9  
+VSS 
+Ground reference for logic. 
+S 
+10  
+SPI_MISO3 
+SPI 3 Master In Slave Out. 
+I 
+11  
+SPI_SCLK3 
+SPI 3 Clock. 
+O 
+12  
+SPI_SS3 
+SPI 3 Chip Select. 
+O 
+13  
+VSSIO 
+Ground reference for IO pins. 
+S 
+14  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+15  
+BOOT_SEL 
+Boot select. 
+I 
+16  
+PROC_HB 
+Heartbeat signal. 
+O 
+17  
+RFIU1 
+Connect to GND. 
+NA 
+18  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+19  
+VSS 
+Ground reference for logic. 
+S 
+20  
+RFIU2 
+Connect to GND through a 1K resistor. 
+NA 
+21  
+RFIU3 
+JTAG TDO. Left unconnected. 
+NA 
+22  
+RFIU4 
+JTAG TMS. Connect to GND through a 1K resistor. 
+NA 
+23  
+RFIU5 
+JTAG TDI. Connect to GND through a 1K resistor. 
+NA 
+24  
+VSSIO 
+Ground reference for IO pins. 
+S 
+25  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+26  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 7/15
+ 
+ 
+27  
+VSS 
+Ground reference for logic. 
+S 
+28  
+RFIU6 
+JTAG TCK. Connect to GND through a 1K resistor 
+NA 
+29  
+RFIU7 
+JTAG TRST. Connect to GND through a 1K resistor 
+NA 
+30  
+RFIU8 
+Test mode select. Connect to GND through a 1K 
+resistor. 
+NA 
+31  
+I2C_SDA2 
+I2C 2 Serial Data. 
+I/O 
+32  
+I2C_SCL2 
+I2C 2 Serial Clock. 
+I/O 
+33  
+I2C_SCL0 
+I2C 0 Serial Clock. 
+I/O 
+34  
+I2C_SDA0 
+I2C 0 Serial Data. 
+I/O 
+35  
+VSS 
+Ground reference for logic. 
+S 
+36  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+37  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+38  
+VSSIO 
+Ground reference for IO pins. 
+S 
+39  
+SPI_SS1 
+SPI 1 Chip Select. 
+O 
+40  
+SPI_SCLK1 
+SPI 1 Clock. 
+O 
+41  
+SPI_MISO1 
+SPI 1 Master In Slave Out. 
+I 
+42  
+SPI_MOSI1 
+SPI 1 Master Out Slave In. 
+O 
+43  
+PUSH_RESETN 
+Reset. (ACTIVE LOW) 
+I 
+44  
+CLK 
+System Clock. 
+I 
+45  
+UART_TX1 
+UART 1 Serial Out / Transmit. 
+O 
+46  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+47  
+VSSIO 
+Ground reference for IO pins. 
+S 
+48  
+VSS 
+Ground reference for logic. 
+S 
+49  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+50  
+UART_RX1 
+UART 1 Serial In / Receive. 
+I 
+51  
+GPIO15 
+General purpose IO GPIO0 (15). 
+I/O 
+52  
+GPIO14 
+General purpose IO GPIO0 (14). 
+I/O 
+53  
+GPIO13 
+General purpose IO GPIO0 (13). 
+I/O 
+54  
+GPIO12 
+General purpose IO GPIO0 (12). 
+I/O 
+55  
+GPIO11 
+General purpose IO GPIO0 (11). 
+I/O 
+56  
+VSS 
+Ground reference for logic. 
+S 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 8/15
+ 
+ 
+57  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+58  
+GPIO10 
+General purpose IO GPIO0 (10). 
+I/O 
+59  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+60  
+VSSIO 
+Ground reference for IO pins. 
+S 
+61  
+GPIO9 
+General purpose IO GPIO0 (9). 
+I/O 
+62  
+GPIO8 
+General purpose IO GPIO0 (8). 
+I/O 
+63  
+GPIO7 
+General purpose IO GPIO0 (7). 
+I/O 
+64  
+GPIO6 
+General purpose IO GPIO0 (6). 
+I/O 
+65  
+GPIO5 
+General purpose IO GPIO0 (5). 
+I/O 
+66  
+GPIO4 
+General purpose IO GPIO0 (4). 
+I/O 
+67  
+VSS 
+Ground reference for logic. 
+S 
+68  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+69  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+70  
+VSSIO 
+Ground reference for IO pins. 
+S 
+71  
+GPIO3 
+General purpose IO GPIO0 (3). 
+I/O 
+72  
+GPIO2 
+General purpose IO GPIO0 (2). 
+I/O 
+73  
+GPIO1 
+General purpose IO GPIO0 (1). 
+I/O 
+74  
+GPIO0 
+General purpose IO GPIO0 (0). 
+I/O 
+75  
+PWM_7 
+Pulse Width Modulation. 
+O 
+76  
+PWM_6 
+Pulse Width Modulation. 
+O 
+77  
+PWM_5 
+Pulse Width Modulation. 
+O 
+78  
+VSS 
+Ground reference for logic. 
+S 
+79  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+80  
+PWM_4 
+Pulse Width Modulation. 
+O 
+81  
+PWM_3 
+Pulse Width Modulation. 
+O 
+82  
+PWM_2 
+Pulse Width Modulation. 
+O 
+83  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+84  
+VSSIO 
+Ground reference for IO pins. 
+S 
+85  
+PWM_1 
+Pulse Width Modulation. 
+O 
+86  
+PWM_0 
+Pulse Width Modulation. 
+O 
+87  
+SPI_MOSI0 
+SPI 0 Master Out Slave In. 
+O 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 9/15
+ 
+ 
+88  
+VSS 
+Ground reference for logic. 
+S 
+89  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+90  
+SPI_MISO0 
+SPI 0 Master In Slave Out. 
+I 
+91  
+SPI_SCLK0 
+SPI 0 Clock. 
+O 
+92  
+SPI_SS0 
+SPI 0 Chip Select. 
+O 
+93  
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+94  
+VSSIO 
+Ground reference for IO pins. 
+S 
+95  
+I2C_SDA1 
+I2C 1 Serial Data. 
+I/O 
+96  
+I2C_SCL1 
+I2C 1 Serial Clock. 
+I/O 
+97  
+SPI_MOSI2 
+SPI 2 Master Out Slave In. 
+O 
+98  
+SPI _MISO2 
+SPI 2 Master In Slave Out. 
+I 
+99  
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+100 
+VSS 
+Ground reference for logic. 
+S 
+101 
+SPI_SCLK2 
+SPI 2 Clock. 
+O 
+102 
+SPI_SS2 
+SPI 2 Chip Select. 
+O 
+103 
+VSSIO 
+Ground reference for IO pins. 
+S 
+104 
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+105 
+UART_RX2 
+UART 2 Serial In / Receive. 
+I 
+106 
+UART_TX2 
+UART 2 Serial Out / Transmit. 
+O 
+107 
+UART_RX0 
+UART 0 Serial In / Receive. 
+I 
+108 
+UART_TX0 
+UART 0 Serial Out / Transmit. 
+O 
+109 
+GPIO31 
+General purpose IO GPIO1 (15). 
+I/O 
+110 
+GPIO30 
+General purpose IO GPIO1 (14). 
+I/O 
+111 
+GPIO29 
+General purpose IO GPIO1 (13). 
+I/O 
+112 
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+113 
+VSS 
+Ground reference for logic. 
+S 
+114 
+VSSIO 
+Ground reference for IO pins. 
+S 
+115 
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+116 
+GPIO28 
+General purpose IO GPIO1 (12). 
+I/O 
+117 
+GPIO27 
+General purpose IO GPIO1 (11). 
+I/O 
+118 
+GPIO26 
+General purpose IO GPIO1 (10). 
+I/O 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 10/15
+ 
+ 
+LDO
+OPAMP
+LDO
+VCC_USB 
+VCC_5V 
+VIN 
+FTDI
+ADC
+SPI Flash
+LEDs
+ 
+ 
+Thejas32 SoC 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+                  # S-Supply, I/O - Input/ Output, I - Input, O - Output, RFIU - Reserved for internal use 
+ 
+3.4.
+3.4.
+3.4.
+3.4. Power
+Power
+Power
+Power Tree
+Tree
+Tree
+Tree 
+ 
+ 
+ 
+ 
+ 
+119 
+GPIO25 
+General purpose IO GPIO1 (9). 
+I/O 
+120 
+GPIO24 
+General purpose IO GPIO1 (8). 
+I/O 
+121 
+GPIO23 
+General purpose IO GPIO1 (7). 
+I/O 
+122 
+GPIO22 
+General purpose IO GPIO1 (6). 
+I/O 
+123 
+VSSIO 
+Ground reference for IO pins. 
+S 
+124 
+VDDIO 
+Positive supply for IO pins. Connect to 3.3V supply. 
+S 
+125 
+VDD 
+Positive supply for logic. Connect to 1.2V supply. 
+S 
+126 
+VSS 
+Ground reference for logic. 
+S 
+127 
+GPIO21 
+General purpose IO GPIO1 (5). 
+I/O 
+128 
+GPIO20 
+General purpose IO GPIO1 (4). 
+I/O 
+VCC_1.2V 
+VCC_3.3V 
+LDO 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 11/15
+ 
+ 
+ 
+4.
+4.4.
+4. Board
+Board
+Board
+Board Operation
+Operation
+Operation
+Operation 
+4.1.
+4.1.
+4.1.
+4.1. Getting
+Getting
+Getting
+Getting Started
+Started
+Started
+Started 
+ To use Vega Arduino IDE for programming follow the  steps given in the link below 
+ 
+• For Linux; https://bit.ly/vega-linux 
+ 
+• For Windows; https://bit.ly/vega-windows 
+ 
+ To use Eclipse IDE for programming follow the steps given in the link below 
+ 
+• https://cdac-vega.gitlab.io/sdkuserguide.html 
+ 
+5.5.5.5. Connector pinouts
+Connector pinouts
+Connector pinouts
+Connector pinouts 
+ 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 12/15
+ 
+ 
+ 
+SL No. 
+SPECIFICATIONS
+THEJAS 32 
+ARIES 
+BOARD 
+REMARKS 
+1 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+    SPI (4) 
+SPI_SS0 
+J1_8 
+Connected to HEADER J1 
+2 
+SPI_SCLK0 
+J1_5 
+3 
+SPI_MISO0 
+J1_6 
+4 
+SPI_MOSI0 
+J1_7 
+5 
+SPI_SS1 
+J7_6 
+Connected to HEADER J7 
+6 
+SPI_SCLK1 
+J7_4 
+7 
+SPI_MISO1 
+J7_2 
+8 
+SPI_MOSI1 
+J7_3 
+9 
+SPI_SS2 
+J4_6 
+Connected to HEADER J4 
+10 
+SPI_SCLK2 
+J4_4 
+11 
+SPI_MISO2 
+J4_2 
+12 
+SPI_MOSI2 
+J4_3 
+13 
+SPI_SS3 
+U5_1 
+Connected to SPI BOOT 
+FLASH IC 
+14 
+SPI_SCLK3 
+U5_6 
+15 
+SPI_MISO3 
+U5_2 
+16 
+SPI_MOSI3 
+U5_5 
+ 
+17 
+ 
+ 
+  I2C (3) 
+SCL 
+J10_12 
+Connected to HEADER J10 
+18 
+SDA 
+J10_10 
+19 
+SCL_1 
+J1_1 
+Connected to HEADER J1 
+20 
+SDA_1 
+J1_2 
+21 
+SCL_2 
+U9_10 
+Connected to I2C ADC IC 
+22 
+SDA_2 
+U9_9 
+ 
+23 
+ 
+       UART (3) 
+UART_RXD0 
+U10_15 
+Connected to UART 
+TO USB 
+INTERFACE IC 
+24 
+UART_TXD0 
+U10_2 
+25 
+UART_RX1 
+J2_15 
+Connected to HEADER J2 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 13/15
+ 
+ 
+26 
+UART_TX1 
+J2_13 
+27 
+UART_RX2 
+J5_1 
+Connected to HEADER J5 
+28 
+UART_TX2 
+J5_2 
+ 
+29 
+    
+  
+        PWM (8) 
+PWM_0 
+J2_5 
+ 
+Connected to HEADER J2 
+30 
+PWM_1 
+J2_3 
+31 
+PWM_2 
+J2_1 
+32 
+PWM_3 
+J1_10 
+Connected to HEADER J1 
+33 
+PWM_4 
+J1_9 
+34 
+PWM_5 
+J3_3 
+ 
+Connected to HEADER J3 
+35 
+PWM_6 
+J3_2 
+36 
+PWM_7 
+J3_1 
+ 
+37 
+ 
+ 
+ 
+GPIO (32) 
+GPIO0 
+J2_11 
+ 
+ 
+Connected to HEADER J2 
+38 
+GPIO1 
+J2_9 
+39 
+GPIO2 
+J2_7 
+40 
+GPIO3 
+J2_16 
+41 
+GPIO4 
+J2_14 
+42 
+GPIO5 
+J2_12 
+43 
+GPIO6 
+J2_10 
+44 
+GPIO7 
+J2_8 
+45 
+GPIO8 
+J2_6 
+46 
+GPIO9 
+J2_4 
+47 
+GPIO10 
+J2_2 
+48 
+GPIO11 
+J3_8 
+ 
+ 
+Connected to HEADER J3 
+49 
+GPIO12 
+J3_7 
+50 
+GPIO13 
+J3_6 
+51 
+GPIO14 
+J3_5 
+52 
+GPIO15 
+J3_4 
+53 
+GPIO16 
+DIP_SW_1 
+Connected to DIP SWITCH 
+54 
+GPIO17 
+DIP_SW_3 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 14/15
+ 
+ 
+55 
+GPIO18 
+BTN1_1 
+Connected to PUSH 
+BUTTON 
+56 
+GPIO19 
+BTN0_1 
+57 
+GPIO20 
+LD3_1 
+Connected to LED 
+58 
+GPIO21 
+LD2_1 
+ 
+59 
+ 
+GPIO22 
+ 
+LD1_4 
+Connected to GREEN of 
+RGBLED 
+60 
+GPIO23 
+LD1_3 
+Connected to BLUE of 
+RGB LED 
+61 
+GPIO24 
+LD1_2 
+Connected to RED of RGB 
+LED 
+62 
+GPIO25 
+J9_7 
+ 
+ 
+ 
+Connected to HEADER J9 
+63 
+GPIO26 
+J9_6 
+64 
+GPIO27 
+J9_5 
+65 
+GPIO28 
+J9_4 
+66 
+GPIO29 
+J9_3 
+67 
+GPIO30 
+J9_2 
+68 
+GPIO31 
+J9_1 
+ 
+69 
+CLOCK 
+CLK_100M 
+U4_3 
+Connected to 
+OSCILLATOR 
+70 
+RESET 
+PUSH_RESET
+N 
+U 8_1 
+Connected to RESET IC 
+71 
+HEART BEAT 
+LED 
+PROC_HEAR
+T_BEAT 
+LD4_1 
+Connected to LED 
+ 
+72 
+ 
+BOOT SELECT 
+ 
+BOOT_SEL 
+ 
+J12_1 
+ 
+Connected to HEADER 
+J12 
+ 
+ 
+73 
+ 
+ADC_CH0 
+ 
+_ 
+J10_2,U9_4 
+ 
+ 
+ 
+ANALOG INPUTS 
+ 
+74 
+ 
+ADC_CH1 
+_ 
+J10_4,U9_5 
+ARIES v2.0 
+© October, 2022 Centre for Development of Advanced Computing (C-DAC)
+Page | 15/15
+ 
+ 
+ 
+75 
+ 
+ADC_CH2 
+_ 
+J10_6,U9_6 
+Connected to HEADER 
+J10 & I2C ADC IC 
+ 
+76 
+ 
+ADC_CH3 
+_ 
+J10_8,U9_7 
+ 
+6.6.6.6. Board
+Board
+Board
+Board Outline
+Outline
+Outline
+Outline & Mounting
+Mounting
+Mounting
+Mounting Holes
+Holes
+Holes
+Holes 
+ 
+ 
+(Dimensions in mm [mil]) 
+ 
+7.7.7.7. Company Information 
+Company name 
+C-DAC 
+ 
+Company Address 
+Hardware Design Group 
+Centre for Development of Advanced Computing 
+(C-DAC) Thiruvananthapuram, Kerala – 695033 
+Fax: 0471-2723456 Email: vega@cdac.in 
+www.vegaprocessors.in 
+www.cdac.in
+ 
+8.
+8.8.
+8. Reference
+Reference
+Reference
+Reference Documentation
+Documentation
+Documentation
+Documentation 
+ 
+Link 
+ARIESv2.0 details 
+www.vegaprocessors.in/devboards/ariesv2 
+ 

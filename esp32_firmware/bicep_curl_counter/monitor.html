@@ -1,0 +1,371 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>ESP32 Bicep Trainer Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #00f5ff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h3 {
+            color: #00f5ff;
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .stat {
+            background: rgba(0, 245, 255, 0.08);
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 245, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat:hover {
+            background: rgba(0, 245, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00f5ff;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            display: block;
+        }
+
+        .warning {
+            background: rgba(255, 100, 100, 0.15);
+            border-color: rgba(255, 100, 100, 0.5);
+        }
+
+        .good {
+            background: rgba(100, 255, 100, 0.15);
+            border-color: rgba(100, 255, 100, 0.5);
+        }
+
+        #status {
+            padding: 12px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .connected {
+            background: rgba(0, 255, 100, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(0, 255, 100, 0.3);
+        }
+
+        .disconnected {
+            background: rgba(255, 50, 50, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(255, 50, 50, 0.3);
+        }
+
+        .ip-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 16px;
+            width: 200px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00f5ff, #0099ff);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+        }
+
+        .emg {
+            color: #ff00ff !important;
+        }
+
+        .emg-border {
+            border-color: rgba(255, 0, 255, 0.3) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏋️ ESP32 Bicep Trainer</h1>
+        <p class="subtitle">Real-time Sensor Monitor</p>
+
+        <div class="ip-input">
+            <input type="text" id="espIP" placeholder="ESP32 IP (e.g., 192.168.1.100)" value="">
+            <button onclick="connectToESP()">Connect</button>
+        </div>
+
+        <div id="status" class="disconnected">Enter ESP32 IP and click Connect</div>
+
+        <div class="card">
+            <h3>📊 Sensors</h3>
+            <div class="grid">
+                <div class="stat">
+                    <div class="stat-value" id="force">0</div>
+                    <div class="stat-label">Force Sensor</div>
+                </div>
+                <div class="stat emg-border">
+                    <div class="stat-value emg" id="emg">0</div>
+                    <div class="stat-label">EMG Signal</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="curls">0/0</div>
+                    <div class="stat-label">Curls (Good/Total)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="thresh">-/-</div>
+                    <div class="stat-label">Thresholds</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🎯 IMU Orientation</h3>
+            <div class="grid">
+                <div class="stat">
+                    <div class="stat-value" id="roll">0°</div>
+                    <div class="stat-label">Roll</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="pitch">0°</div>
+                    <div class="stat-label">Pitch</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="yaw">0°</div>
+                    <div class="stat-label">Yaw</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accel">0</div>
+                    <div class="stat-label">Accel (m/s²)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📈 Force Sensor Graph</h3>
+            <canvas id="forceChart"></canvas>
+        </div>
+
+        <div class="card emg-border">
+            <h3 class="emg">💪 EMG Signal Graph</h3>
+            <canvas id="emgChart"></canvas>
+        </div>
+
+        <div class="card" id="warnCard">
+            <h3>⚠️ Form Feedback</h3>
+            <div id="warn" style="font-size: 24px; text-align: center; padding: 10px;">OK</div>
+        </div>
+    </div>
+
+    <script>
+        let forceData = new Array(300).fill(0);
+        let emgData = new Array(300).fill(0);
+        let ws = null;
+
+        const forceCanvas = document.getElementById('forceChart');
+        const emgCanvas = document.getElementById('emgChart');
+        const forceCtx = forceCanvas.getContext('2d');
+        const emgCtx = emgCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            forceCanvas.width = forceCanvas.offsetWidth;
+            forceCanvas.height = 150;
+            emgCanvas.width = emgCanvas.offsetWidth;
+            emgCanvas.height = 150;
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        function drawGraph(ctx, data, color, maxVal = 4095) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                const y = (ctx.canvas.height / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(ctx.canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw line
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const step = ctx.canvas.width / data.length;
+            data.forEach((val, i) => {
+                const x = i * step;
+                const y = ctx.canvas.height - (val / maxVal * ctx.canvas.height * 0.9) - 5;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw current value
+            const lastVal = data[data.length - 1];
+            ctx.fillStyle = color;
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(lastVal.toFixed(0), 10, 20);
+        }
+
+        function connectToESP() {
+            const ip = document.getElementById('espIP').value.trim();
+            if (!ip) {
+                alert('Please enter ESP32 IP address');
+                return;
+            }
+
+            if (ws) {
+                ws.close();
+            }
+
+            document.getElementById('status').className = 'disconnected';
+            document.getElementById('status').textContent = 'Connecting to ' + ip + '...';
+
+            ws = new WebSocket('ws://' + ip + ':81');
+
+            ws.onopen = () => {
+                document.getElementById('status').className = 'connected';
+                document.getElementById('status').textContent = '✅ Connected to ESP32 at ' + ip;
+                localStorage.setItem('esp32_ip', ip);
+            };
+
+            ws.onclose = () => {
+                document.getElementById('status').className = 'disconnected';
+                document.getElementById('status').textContent = '❌ Disconnected - Click Connect to retry';
+            };
+
+            ws.onerror = (err) => {
+                document.getElementById('status').className = 'disconnected';
+                document.getElementById('status').textContent = '❌ Connection failed - Check IP address';
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const d = JSON.parse(event.data);
+
+                    // Update sensor values
+                    document.getElementById('force').textContent = d.f || 0;
+                    document.getElementById('emg').textContent = d.e || 0;
+                    document.getElementById('curls').textContent = (d.gc || 0) + '/' + (d.tc || 0);
+                    document.getElementById('thresh').textContent = (d.th || '-') + '/' + (d.tl || '-');
+
+                    // Update IMU values
+                    document.getElementById('roll').textContent = (d.r || 0).toFixed(1) + '°';
+                    document.getElementById('pitch').textContent = (d.p || 0).toFixed(1) + '°';
+                    document.getElementById('yaw').textContent = (d.y || 0).toFixed(1) + '°';
+                    document.getElementById('accel').textContent = (d.a || 0).toFixed(1);
+
+                    // Update warning
+                    const warning = d.w || '';
+                    document.getElementById('warn').textContent = warning || 'Good Form! ✓';
+                    document.getElementById('warnCard').className =
+                        warning && warning !== '' ? 'card warning' : 'card good';
+
+                    // Update graphs
+                    forceData.push(d.f || 0);
+                    forceData.shift();
+                    emgData.push(d.e || 0);
+                    emgData.shift();
+
+                    drawGraph(forceCtx, forceData, '#00f5ff');
+                    drawGraph(emgCtx, emgData, '#ff00ff');
+
+                } catch (e) {
+                    console.log('Parse error:', e);
+                }
+            };
+        }
+
+        // Auto-load saved IP
+        const savedIP = localStorage.getItem('esp32_ip');
+        if (savedIP) {
+            document.getElementById('espIP').value = savedIP;
+        }
+    </script>
+</body>
+
+</html>
