@@ -516,7 +516,12 @@ No repository-level LICENSE file was present when this README was prepared. Unle
 
 **Repository:** https://github.com/vishal-r07/Rehabilitation-gamified
 
-**Maintainer:** [vishal-r07](https://github.com/vishal-r07)
+**Maintainer:**
+[vishal-r07](https://github.com/vishal-r07)
+[Kishore-VS](https://github.com/Kishore-VS)
+[ashwinr-act-cit](https://github.com/ashwinr-act-cit)
+[Deepak-prog15](https://github.com/Deepak-prog15)
+[Loki-i](https://github.com/Loki-i)
 
 ---
 
